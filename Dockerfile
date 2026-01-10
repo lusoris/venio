@@ -18,7 +18,7 @@ RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o /app/venio cmd/venio/m
 RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o /app/worker cmd/worker/main.go
 
 # Runtime Stage
-FROM alpine:3.19
+FROM alpine:3.23
 
 WORKDIR /app
 
