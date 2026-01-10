@@ -1,0 +1,48 @@
+run:
+  timeout: 5m
+  tests: true
+  modules-download-mode: readonly
+
+linters:
+  enable:
+    # Basic checks
+    - errcheck
+    - gosimple
+    - govet
+    - ineffassign
+    - staticcheck
+    - unused
+    
+    # Formatting
+    - gofmt
+    - goimports
+    
+    # Code quality
+    - misspell
+    - unconvert
+    - unparam
+    - stylecheck
+
+linters-settings:
+  errcheck:
+    check-blank: true
+  
+  govet:
+    check-shadowing: true
+  
+  goimports:
+    local-prefixes: github.com/lusoris/venio
+  
+  misspell:
+    locale: US
+
+issues:
+  exclude-use-default: false
+  max-issues-per-linter: 0
+  max-same-issues: 0
+  
+  exclude-rules:
+    # Exclude some linters from running on tests files
+    - path: _test\.go
+      linters:
+        - errcheck

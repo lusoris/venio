@@ -1,0 +1,76 @@
+version: "3.8"
+
+services:
+  venio:
+    image: ghcr.io/lusoris/venio:latest
+    container_name: venio
+    restart: unless-stopped
+    ports:
+      - "${PORT:-3690}:3690"
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+      - redis
+      - typesense
+    networks:
+      - venio
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: venio-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-venio}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-venio}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - venio
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-venio}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: venio-redis
+    restart: unless-stopped
+    command: redis-server --requirepass ${REDIS_PASSWORD}
+    volumes:
+      - redis-data:/data
+    networks:
+      - venio
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  typesense:
+    image: typesense/typesense:29.0
+    container_name: venio-typesense
+    restart: unless-stopped
+    environment:
+      TYPESENSE_API_KEY: ${TYPESENSE_API_KEY}
+      TYPESENSE_DATA_DIR: /data
+    volumes:
+      - typesense-data:/data
+    networks:
+      - venio
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8108/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres-data:
+  redis-data:
+  typesense-data:
+
+networks:
+  venio:
+    driver: bridge

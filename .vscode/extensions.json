@@ -1,0 +1,22 @@
+{
+  "recommendations": [
+    "golang.go",
+    "ms-azuretools.vscode-docker",
+    "mtxr.sqltools",
+    "mtxr.sqltools-driver-pg",
+    "humao.rest-client",
+    "rangav.vscode-thunder-client",
+    "redhat.vscode-yaml",
+    "editorconfig.editorconfig",
+    "eamodio.gitlens",
+    "github.vscode-github-actions",
+    "hbenl.vscode-test-explorer",
+    "ryanluker.vscode-coverage-gutters",
+    "usernamehw.errorlens",
+    "davidanson.vscode-markdownlint",
+    "yzhang.markdown-all-in-one",
+    "aaron-bond.better-comments",
+    "gruntfuggly.todo-tree",
+    "streetsidesoftware.code-spell-checker"
+  ]
+}

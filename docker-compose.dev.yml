@@ -1,0 +1,20 @@
+version: "3.8"
+
+services:
+  venio:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    image: venio:dev
+    volumes:
+      - .:/app
+      - go-mod-cache:/go/pkg/mod
+    environment:
+      - ENV=development
+      - LOG_LEVEL=debug
+    ports:
+      - "${PORT:-3690}:3690"
+      - "2345:2345"  # Delve debugger
+
+volumes:
+  go-mod-cache:

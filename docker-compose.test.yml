@@ -1,0 +1,43 @@
+version: "3.8"
+
+services:
+  test:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    image: venio:test
+    command: go test -v -coverprofile=coverage.out ./...
+    volumes:
+      - .:/app
+    environment:
+      - ENV=test
+      - POSTGRES_HOST=postgres-test
+      - REDIS_HOST=redis-test
+    depends_on:
+      - postgres-test
+      - redis-test
+    networks:
+      - test
+
+  postgres-test:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: venio
+      POSTGRES_PASSWORD: test
+      POSTGRES_DB: venio_test
+    tmpfs:
+      - /var/lib/postgresql/data
+    networks:
+      - test
+
+  redis-test:
+    image: redis:7-alpine
+    command: redis-server --requirepass test
+    tmpfs:
+      - /data
+    networks:
+      - test
+
+networks:
+  test:
+    driver: bridge

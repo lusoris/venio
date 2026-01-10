@@ -1,0 +1,67 @@
+# Binaries
+/bin/
+/dist/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Go
+vendor/
+*.out
+coverage.html
+*.test
+*.prof
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Data directories
+/data/
+/logs/
+*.log
+
+# Database files
+*.db
+*.db-shm
+*.db-wal
+
+# IDE
+.idea/
+.vscode/settings.json
+.vscode/launch.json
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# AI Assistants
+.claude/
+.cursor/
+.aider/
+.copilot/
+.codeium/
+.tabnine/
+*.ai-chat
+.ai-history/
+
+# Docker
+docker-compose.override.yml
+
+# Temporary
+/tmp/
+*.tmp
+
+# Snyk Security Extension - AI Rules (auto-generated)
+.github/instructions/snyk_rules.instructions.md
