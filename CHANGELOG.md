@@ -13,6 +13,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - CI/CD pipelines
 - Documentation
 
+### Fixed
+- Fixed golangci-lint deprecated govet.check-shadowing option
+- Fixed lefthook lint command to work with multiple packages
+
+
 ## [0.1.0] - YYYY-MM-DD (MVP Target)
 
 ### Added
