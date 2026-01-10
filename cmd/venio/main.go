@@ -24,14 +24,14 @@ func main() {
 
 	log.Println("🚀 Starting Venio Server...")
 	log.Printf("Version: %s", version)
-	
+
 	// TODO: Initialize configuration
 	// TODO: Initialize database
 	// TODO: Initialize API server
 	// TODO: Start server
-	
+
 	log.Println("✅ Venio Server running on http://localhost:3690")
-	
+
 	// Keep running
 	select {}
 }
