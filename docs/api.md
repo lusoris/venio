@@ -1,108 +1,291 @@
-# API Documentation
+# Venio API Documentation
 
-## Overview
-
-Venio provides a RESTful API for all operations. Full OpenAPI/Swagger documentation is available at:
-
-**Swagger UI:** `http://localhost:3690/swagger/`
+## Base URL
+```
+http://localhost:3690/api/v1
+```
 
 ## Authentication
 
-### JWT Authentication
+All protected endpoints require a JWT token in the Authorization header:
+```
+Authorization: Bearer <access_token>
+```
 
-```http
-POST /api/v1/auth/login
-Content-Type: application/json
+## Endpoints
 
+### Authentication
+
+#### Register
+Creates a new user account.
+
+**Endpoint:** `POST /auth/register`
+
+**Request Body:**
+```json
 {
-  "username": "user@example.com",
-  "password": "password"
+  "email": "user@example.com",
+  "username": "johndoe",
+  "first_name": "John",
+  "last_name": "Doe",
+  "password": "SecurePassword123!"
 }
 ```
 
-Response:
+**Response:** `201 Created`
 ```json
 {
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "expires_at": "2026-01-11T00:00:00Z"
+  "id": 1,
+  "email": "user@example.com",
+  "username": "johndoe",
+  "first_name": "John",
+  "last_name": "Doe",
+  "is_active": true,
+  "created_at": "2026-01-14T12:00:00Z",
+  "updated_at": "2026-01-14T12:00:00Z"
 }
 ```
 
-Use token in subsequent requests:
-```http
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-```
+#### Login
+Authenticates a user and returns JWT tokens.
 
-## API Endpoints
+**Endpoint:** `POST /auth/login`
 
-### Users
-
-- `POST /api/v1/users` - Create user
-- `GET /api/v1/users` - List users
-- `GET /api/v1/users/:id` - Get user
-- `PUT /api/v1/users/:id` - Update user
-- `DELETE /api/v1/users/:id` - Delete user
-
-### Requests
-
-- `POST /api/v1/requests` - Create request
-- `GET /api/v1/requests` - List requests
-- `GET /api/v1/requests/:id` - Get request
-- `PUT /api/v1/requests/:id/approve` - Approve request
-- `DELETE /api/v1/requests/:id` - Cancel request
-
-### Content
-
-- `GET /api/v1/content/search` - Search content
-- `GET /api/v1/content/:type/:id` - Get details
-
-*Full endpoint documentation available in Swagger UI*
-
-## Rate Limiting
-
-API is rate limited to:
-- **Authenticated:** 1000 requests/hour
-- **Unauthenticated:** 100 requests/hour
-
-Rate limit headers:
-```
-X-RateLimit-Limit: 1000
-X-RateLimit-Remaining: 999
-X-RateLimit-Reset: 1609459200
-```
-
-## Error Responses
-
+**Request Body:**
 ```json
 {
-  "error": {
-    "code": "VALIDATION_ERROR",
-    "message": "Invalid request data",
-    "details": {
-      "field": "email",
-      "issue": "invalid format"
-    }
+  "email": "user@example.com",
+  "password": "SecurePassword123!"
+}
+```
+
+**Response:** `200 OK`
+```json
+{
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "user": {
+    "id": 1,
+    "email": "user@example.com",
+    "username": "johndoe",
+    "first_name": "John",
+    "last_name": "Doe",
+    "is_active": true,
+    "created_at": "2026-01-14T12:00:00Z",
+    "updated_at": "2026-01-14T12:00:00Z"
   }
 }
 ```
 
-Common error codes:
-- `UNAUTHORIZED` - 401
-- `FORBIDDEN` - 403
-- `NOT_FOUND` - 404
-- `VALIDATION_ERROR` - 400
-- `INTERNAL_ERROR` - 500
+#### Refresh Token
+Gets a new access token using a refresh token.
 
-## Webhooks
+**Endpoint:** `POST /auth/refresh`
 
-Venio can send webhooks for events. Configure in settings.
+**Request Body:**
+```json
+{
+  "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+}
+```
 
-Events:
-- `request.created`
-- `request.approved`
-- `request.completed`
-- `content.added`
+**Response:** `200 OK`
+```json
+{
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+}
+```
 
----
+### Users (Protected)
 
-*Detailed API reference: Coming soon*
+All user endpoints require authentication.
+
+#### List Users
+Get a paginated list of users.
+
+**Endpoint:** `GET /users?limit=10&offset=0`
+
+**Query Parameters:**
+- `limit` (optional): Number of users to return (default: 10, max: 100)
+- `offset` (optional): Number of users to skip (default: 0)
+
+**Response:** `200 OK`
+```json
+[
+  {
+    "id": 1,
+    "email": "user@example.com",
+    "username": "johndoe",
+    "first_name": "John",
+    "last_name": "Doe",
+    "is_active": true,
+    "created_at": "2026-01-14T12:00:00Z",
+    "updated_at": "2026-01-14T12:00:00Z"
+  }
+]
+```
+
+#### Get User
+Get a specific user by ID.
+
+**Endpoint:** `GET /users/:id`
+
+**Response:** `200 OK`
+```json
+{
+  "id": 1,
+  "email": "user@example.com",
+  "username": "johndoe",
+  "first_name": "John",
+  "last_name": "Doe",
+  "is_active": true,
+  "created_at": "2026-01-14T12:00:00Z",
+  "updated_at": "2026-01-14T12:00:00Z"
+}
+```
+
+#### Update User
+Update user information.
+
+**Endpoint:** `PUT /users/:id`
+
+**Request Body:**
+```json
+{
+  "email": "newemail@example.com",
+  "first_name": "Jane",
+  "is_active": false
+}
+```
+
+**Response:** `200 OK`
+```json
+{
+  "id": 1,
+  "email": "newemail@example.com",
+  "username": "johndoe",
+  "first_name": "Jane",
+  "last_name": "Doe",
+  "is_active": false,
+  "created_at": "2026-01-14T12:00:00Z",
+  "updated_at": "2026-01-14T13:00:00Z"
+}
+```
+
+#### Delete User
+Delete a user by ID.
+
+**Endpoint:** `DELETE /users/:id`
+
+**Response:** `204 No Content`
+
+## Error Responses
+
+All errors return a consistent structure:
+
+```json
+{
+  "error": "Error type",
+  "message": "Detailed error message"
+}
+```
+
+**Common Status Codes:**
+- `400 Bad Request`: Invalid request data
+- `401 Unauthorized`: Missing or invalid authentication
+- `404 Not Found`: Resource not found
+- `500 Internal Server Error`: Server error
+
+## Example Usage
+
+### Using cURL
+
+```bash
+# Register a new user
+curl -X POST http://localhost:3690/api/v1/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "user@example.com",
+    "username": "johndoe",
+    "first_name": "John",
+    "last_name": "Doe",
+    "password": "SecurePassword123!"
+  }'
+
+# Login
+curl -X POST http://localhost:3690/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "user@example.com",
+    "password": "SecurePassword123!"
+  }'
+
+# Get users (with token)
+curl -X GET http://localhost:3690/api/v1/users \
+  -H "Authorization: Bearer <your_access_token>"
+```
+
+### Using PowerShell
+
+```powershell
+# Register a new user
+$body = @{
+    email = "user@example.com"
+    username = "johndoe"
+    first_name = "John"
+    last_name = "Doe"
+    password = "SecurePassword123!"
+} | ConvertTo-Json
+
+Invoke-WebRequest -Uri "http://localhost:3690/api/v1/auth/register" `
+    -Method POST -Body $body -ContentType "application/json"
+
+# Login
+$loginBody = @{
+    email = "user@example.com"
+    password = "SecurePassword123!"
+} | ConvertTo-Json
+
+$response = Invoke-WebRequest -Uri "http://localhost:3690/api/v1/auth/login" `
+    -Method POST -Body $loginBody -ContentType "application/json"
+
+$token = ($response.Content | ConvertFrom-Json).access_token
+
+# Get users (with token)
+$headers = @{ Authorization = "Bearer $token" }
+Invoke-WebRequest -Uri "http://localhost:3690/api/v1/users" `
+    -Method GET -Headers $headers
+```
+
+## JWT Token Claims
+
+Access tokens contain the following claims:
+
+```json
+{
+  "user_id": 1,
+  "email": "user@example.com",
+  "username": "johndoe",
+  "roles": [],
+  "iss": "venio",
+  "exp": 1768482270,
+  "iat": 1768395870
+}
+```
+
+- `user_id`: User's database ID
+- `email`: User's email address
+- `username`: User's username
+- `roles`: Array of user's roles (TODO: populated from database)
+- `iss`: Token issuer (always "venio")
+- `exp`: Token expiration timestamp
+- `iat`: Token issued at timestamp
+
+## Security Notes
+
+1. Passwords are hashed using bcrypt before storage
+2. Passwords are never returned in API responses
+3. All protected routes require valid JWT authentication
+4. Access tokens expire after 24 hours (configurable)
+5. Refresh tokens expire after 7 days (configurable)
+6. SQL injection protection via parameterized queries
