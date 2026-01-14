@@ -45,7 +45,7 @@ services:
       - redis
     networks:
       - venio
-
+    
   # ... other services
 
 volumes:
@@ -62,7 +62,7 @@ networks:
 server {
     listen 80;
     server_name venio.example.com;
-
+    
     location / {
         proxy_pass http://localhost:3690;
         proxy_set_header Host $host;

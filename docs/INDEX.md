@@ -2,15 +2,28 @@
 
 Complete documentation for the Venio project. Start here to find what you need.
 
+> **Documentation Structure:**
+> - **[user/](user/)** - End-user documentation (✅ in `main` branch)
+> - **[admin/](admin/)** - Administrator guides (✅ in `main` branch)
+> - **[dev/](dev/)** - Developer documentation (⚠️ `develop` branch only)
+
 ## 🚀 Getting Started
 
-### For New Developers
-1. **Windows Users:** Start with [Windows Setup Guide](windows-setup.md)
+### For End Users
+- [User Guide](user/getting-started.md) - How to use Venio
+- [FAQ](user/faq.md) - Common questions and answers
+
+### For Administrators
+- [Configuration Guide](admin/configuration.md) - Environment variables and settings
+- [Deployment Guide](admin/deployment.md) - Docker, Kubernetes, production setup
+
+### For Developers
+1. **Windows Users:** Start with [Windows Setup Guide](dev/windows-setup.md)
    - Automated setup with `setup-windows-dev.ps1` (installs everything including GNU Make)
    - Manual step-by-step instructions
    - Troubleshooting guide for common issues
 
-2. **Linux/macOS Users:** See [Development Guide](development.md)
+2. **Linux/macOS Users:** See [Development Guide](dev/development.md)
    - Environment setup
    - Running locally
    - Using build tools
@@ -58,30 +71,46 @@ cd web && npm run dev
 
 ## 📚 Documentation Structure
 
-### Essential Reading
+### 👥 User Documentation ([user/](user/))
+Available in both `main` and `develop` branches.
+
+| Document | Audience | Time | Content |
+|----------|----------|------|---------|
+| **[Getting Started](user/getting-started.md)** | End Users | 10 min | Account setup, dashboard overview, basic usage |
+| **[FAQ](user/faq.md)** | End Users | 5 min | Common questions, troubleshooting, getting help |
+
+### 🔧 Administrator Documentation ([admin/](admin/))
+Available in both `main` and `develop` branches.
+
+| Document | Audience | Time | Content |
+|----------|----------|------|---------|
+| **[Configuration Reference](admin/configuration.md)** | Admins/DevOps | 10 min | Environment variables, options, best practices |
+| **[Deployment Guide](admin/deployment.md)** | Admins/DevOps | 20 min | Docker, Kubernetes, production setup, monitoring |
+
+### 💻 Developer Documentation ([dev/](dev/))
+**Only available in `develop` branch** (not synced to `main`).
+
+#### Essential Reading
 | Document | Audience | Time | Content |
 |----------|----------|------|---------|
 | **[README.md](../README.md)** | Everyone | 5 min | Project overview, features, quick links |
-| **[PROJECT_STATUS.md](PROJECT_STATUS.md)** | Everyone | 10 min | Complete status, what's done, what's next |
-| **[Architecture Overview](architecture.md)** | Developers | 15 min | System design, components, data flow |
+| **[PROJECT_STATUS.md](dev/PROJECT_STATUS.md)** | Developers | 10 min | Complete status, what's done, what's next |
+| **[Architecture Overview](dev/architecture.md)** | Developers | 15 min | System design, components, data flow |
 
-### Setup & Configuration
+#### Setup & Development
 | Document | Audience | Time | Content |
 |----------|----------|------|---------|
-| **[Windows Setup Guide](windows-setup.md)** | Windows Developers | 20-30 min | Automated/manual setup, Make installation, troubleshooting |
-| **[Development Guide](development.md)** | All Developers | 20 min | General setup, running locally, configuration |
-| **[Configuration Reference](configuration.md)** | DevOps/Backend | 10 min | All environment variables, options, defaults |
+| **[Windows Setup Guide](dev/windows-setup.md)** | Windows Developers | 20-30 min | Automated/manual setup, Make installation, troubleshooting |
+| **[Development Guide](dev/development.md)** | All Developers | 20 min | General setup, running locally, configuration |
+| **[API Documentation](dev/api.md)** | Backend/Frontend Dev | 15 min | All endpoints, request/response examples, testing |
 
-### API & Integration
+#### Best Practices & Standards
 | Document | Audience | Time | Content |
 |----------|----------|------|---------|
-| **[API Documentation](api.md)** | Backend/Frontend Dev | 15 min | All endpoints, request/response examples, testing |
-| **[Integration Guides](deployment.md)** | DevOps | 20 min | Deployment, monitoring, scaling |
-
-### Development Standards
-| Document | Audience | Time | Content |
-|----------|----------|------|---------|
-| **[Project Guidelines](project-guidelines.md)** | All Developers + AI | 20 min | Coding standards, commit conventions, security |
+| **[Best Practices](dev/best-practices.md)** | All Developers | 30 min | **NEW:** Gin, pgx, JWT, Next.js, PostgreSQL, Redis patterns |
+| **[Security Hardening](dev/security-hardening.md)** | All Developers | 30 min | **NEW:** OWASP Top 10, secrets management, container security |
+| **[Project Guidelines](dev/project-guidelines.md)** | All Developers + AI | 20 min | Coding standards, commit conventions, AI instructions |
+| **[Project Standards](dev/project-standards.md)** | All Developers | 10 min | Tech stack versions, CalVer, dependency policy |
 | **[Contributing Guide](../CONTRIBUTING.md)** | Contributors | 10 min | Code of conduct, PR process, development workflow |
 
 ---
@@ -90,42 +119,54 @@ cd web && npm run dev
 
 ### I want to...
 
-#### Set up my development environment
-- **Windows:** [Windows Setup Guide](windows-setup.md) → Run `setup-windows-dev.ps1`
-- **Linux/macOS:** [Development Guide](development.md) → Follow "Initial Setup"
-- **Any OS:** [PROJECT_STATUS.md - Quick Start](PROJECT_STATUS.md#quick-start-for-new-developers)
+#### Use Venio as an end user
+- [Getting Started Guide](user/getting-started.md) - Account setup and basic usage
+- [FAQ](user/faq.md) - Common questions and troubleshooting
+
+#### Deploy and manage Venio
+- [Configuration Guide](admin/configuration.md) - Environment variables and settings
+- [Deployment Guide](admin/deployment.md) - Docker, Kubernetes, production
+
+#### Develop Venio features
+- **Windows:** [Windows Setup Guide](dev/windows-setup.md) → Run `setup-windows-dev.ps1`
+- **Linux/macOS:** [Development Guide](dev/development.md) → Follow "Initial Setup"
+- **Quick Start:** [PROJECT_STATUS.md - Quick Start](dev/PROJECT_STATUS.md#quick-start-for-new-developers)
 
 #### Understand how Venio works
 1. [Project Overview](../README.md#-features)
-2. [Architecture Overview](architecture.md)
-3. [API Documentation](api.md)
+2. [Architecture Overview](dev/architecture.md)
+3. [API Documentation](dev/api.md)
 
 #### Build/modify the backend (Go)
-1. [Development Guide](development.md#running-locally)
-2. [Project Guidelines](project-guidelines.md#development-standards)
-3. [Architecture Overview](architecture.md#package-structure)
+1. [Best Practices - Go, Gin, pgx](dev/best-practices.md) - **NEW:** Framework-specific patterns
+2. [Security Hardening](dev/security-hardening.md) - **NEW:** OWASP Top 10 coverage
+3. [Development Guide](dev/development.md#running-locally)
+4. [Project Guidelines](dev/project-guidelines.md#development-standards)
+5. [Architecture Overview](dev/architecture.md#package-structure)
 
 #### Build/modify the frontend (React/TypeScript)
-1. [Development Guide](development.md)
-2. Navigate to `web/` directory
-3. [Project Guidelines - TypeScript section](project-guidelines.md#typescriptreact)
+1. [Best Practices - Next.js, React, TypeScript](dev/best-practices.md) - **NEW:** Frontend patterns
+2. [Development Guide](dev/development.md)
+3. Navigate to `web/` directory
+4. [Project Guidelines - TypeScript section](dev/project-guidelines.md#typescriptreact)
 
 #### Deploy Venio
-1. [Deployment Guide](deployment.md)
-2. [Configuration Reference](configuration.md)
-3. [Architecture Overview](architecture.md#deployment)
+1. [Deployment Guide](admin/deployment.md)
+2. [Configuration Reference](admin/configuration.md)
+3. [Architecture Overview](dev/architecture.md#deployment)
 
 #### Understand the project status
-- [PROJECT_STATUS.md](PROJECT_STATUS.md) - Everything about what's done, bugs, roadmap
+- [PROJECT_STATUS.md](dev/PROJECT_STATUS.md) - Everything about what's done, bugs, roadmap
 
 #### Write AI-assisted code
-- [Project Guidelines - AI Instructions](project-guidelines.md#ai-assistant-instructions)
-- Follow the [Security Guidelines](project-guidelines.md#security-guidelines)
+- [Project Guidelines - AI Instructions](dev/project-guidelines.md#ai-assistant-instructions)
+- [Testing Guidelines](.github/instructions/testing-guidelines.instructions.md) - **NEW:** Testing best practices
+- Follow the [Security Guidelines](dev/project-guidelines.md#security-guidelines)
 
 #### Debug/troubleshoot issues
-1. [Windows Setup - Troubleshooting](windows-setup.md#troubleshooting) (Windows)
-2. [Development Guide - Configuration](development.md#configuration)
-3. [PROJECT_STATUS - Known Issues](PROJECT_STATUS.md#known-issues--workarounds)
+1. [Windows Setup - Troubleshooting](dev/windows-setup.md#troubleshooting) (Windows)
+2. [Development Guide - Configuration](dev/development.md#configuration)
+3. [PROJECT_STATUS - Known Issues](dev/PROJECT_STATUS.md#known-issues--workarounds)
 
 ---
 
@@ -135,25 +176,26 @@ cd web && npm run dev
 
 #### ✅ Complete
 - [x] README.md - Project overview, quick start, links
+- [x] User Guide - End-user documentation (getting started, FAQ)
+- [x] Admin Guide - Configuration and deployment
 - [x] Development Guide - All platforms setup, running, config
 - [x] Windows Setup Guide - Automated setup, manual steps, troubleshooting
 - [x] Architecture Overview - System design, components, interactions
 - [x] API Documentation - All endpoints with examples
-- [x] Configuration Reference - All env variables
+- [x] **Best Practices** - **NEW:** Gin, pgx, JWT, Next.js, PostgreSQL, Redis patterns
+- [x] **Security Hardening** - **NEW:** OWASP Top 10, secrets management, container security
 - [x] Project Guidelines - Coding standards, security, AI instructions
 - [x] PROJECT_STATUS.md - Complete implementation status
 - [x] Project Structure - Folder organization
 
 #### 🟡 Partial
-- [ ] Deployment Guide - Basic outline, needs production procedures
-- [ ] Contributing Guide - Exists but could expand on workflow
+- [ ] Frontend component library documentation
+- [ ] Service integration examples
 
 #### 🔴 TODO
 - [ ] Database schema diagram (visual)
-- [ ] Frontend component library documentation
-- [ ] Service integration examples
 - [ ] Performance tuning guide
-- [ ] Monitoring & logging setup
+- [ ] Monitoring & logging setup guide
 
 ---
 
