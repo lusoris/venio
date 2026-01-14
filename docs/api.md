@@ -525,6 +525,202 @@ Remove a role from a user.
 
 **Response:** `204 No Content`
 
+### Admin Dashboard
+
+The admin dashboard provides dedicated endpoints for managing users, roles, and assignments. These endpoints are designed for administrative UIs and return data optimized for management views.
+
+#### List All Users (Admin)
+Get all users with pagination and extended details.
+
+**Endpoint:** `GET /admin/users`
+
+**Authorization:** Requires `admin` role
+
+**Response:** `200 OK`
+```json
+{
+  "users": [
+    {
+      "id": 1,
+      "email": "user@example.com",
+      "username": "johndoe",
+      "first_name": "John",
+      "last_name": "Doe",
+      "is_active": true,
+      "created_at": "2026-01-14T12:00:00Z"
+    }
+  ]
+}
+```
+
+#### Create User (Admin)
+Create a new user with role assignments.
+
+**Endpoint:** `POST /admin/users`
+
+**Authorization:** Requires `admin` role
+
+**Request Body:**
+```json
+{
+  "email": "newuser@example.com",
+  "username": "newuser",
+  "first_name": "Jane",
+  "last_name": "Smith",
+  "password": "SecurePassword123!",
+  "roles": [1, 2]
+}
+```
+
+**Response:** `201 Created`
+```json
+{
+  "id": 5,
+  "email": "newuser@example.com",
+  "username": "newuser",
+  "firstName": "Jane",
+  "lastName": "Smith"
+}
+```
+
+#### Delete User (Admin)
+Delete a user from the system.
+
+**Endpoint:** `DELETE /admin/users/:id`
+
+**Authorization:** Requires `admin` role
+
+**Response:** `200 OK`
+```json
+{
+  "message": "User deleted successfully"
+}
+```
+
+#### List All Roles (Admin)
+Get all roles with user counts.
+
+**Endpoint:** `GET /admin/roles`
+
+**Authorization:** Requires `admin` role
+
+**Response:** `200 OK`
+```json
+{
+  "roles": [
+    {
+      "id": 1,
+      "name": "admin",
+      "description": "Administrator role",
+      "user_count": 2,
+      "created_at": "2026-01-14T12:00:00Z"
+    }
+  ]
+}
+```
+
+#### Create Role (Admin)
+Create a new role with permission assignments.
+
+**Endpoint:** `POST /admin/roles`
+
+**Authorization:** Requires `admin` role
+
+**Request Body:**
+```json
+{
+  "name": "moderator",
+  "description": "Content moderator",
+  "permissions": [3, 5, 7]
+}
+```
+
+**Response:** `201 Created`
+```json
+{
+  "id": 4,
+  "name": "moderator"
+}
+```
+
+#### Delete Role (Admin)
+Delete a role from the system.
+
+**Endpoint:** `DELETE /admin/roles/:id`
+
+**Authorization:** Requires `admin` role
+
+**Response:** `200 OK`
+```json
+{
+  "message": "Role deleted successfully"
+}
+```
+
+#### List All Permissions (Admin)
+Get all available permissions.
+
+**Endpoint:** `GET /admin/permissions`
+
+**Authorization:** Requires `admin` role
+
+**Response:** `200 OK`
+```json
+{
+  "permissions": [
+    {
+      "id": 1,
+      "name": "users.read",
+      "description": "Read user data",
+      "created_at": "2026-01-14T12:00:00Z"
+    }
+  ]
+}
+```
+
+#### List User-Role Assignments (Admin)
+Get all user-role assignments for management.
+
+**Endpoint:** `GET /admin/user-roles`
+
+**Authorization:** Requires `admin` role
+
+**Response:** `200 OK`
+```json
+{
+  "assignments": [
+    {
+      "user_id": 1,
+      "user_email": "user@example.com",
+      "role_name": "admin",
+      "assigned_at": "2026-01-14T12:00:00Z"
+    }
+  ]
+}
+```
+
+#### Remove User-Role Assignment (Admin)
+Remove a specific role assignment from a user.
+
+**Endpoint:** `DELETE /admin/user-roles/:id`
+
+**Authorization:** Requires `admin` role
+
+**Request Body:**
+```json
+{
+  "user_id": 1,
+  "role_id": 2
+}
+```
+
+**Response:** `200 OK`
+```json
+{
+  "message": "Role assignment removed successfully"
+}
+```
+
 ## Error Responses
 
 All errors return a consistent structure:

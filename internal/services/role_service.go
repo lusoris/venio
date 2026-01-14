@@ -108,9 +108,9 @@ func (s *roleService) Update(ctx context.Context, id int64, req models.UpdateRol
 
 	// If name is being updated, check for duplicates
 	if req.Name != nil && *req.Name != existing.Name {
-		duplicate, err := s.roleRepository.GetByName(ctx, *req.Name)
-		if err != nil {
-			return nil, err
+		duplicate, dupErr := s.roleRepository.GetByName(ctx, *req.Name)
+		if dupErr != nil {
+			return nil, dupErr
 		}
 
 		if duplicate != nil {

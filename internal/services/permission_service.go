@@ -106,9 +106,9 @@ func (s *permissionService) Update(ctx context.Context, id int64, req models.Upd
 
 	// If name is being updated, check for duplicates
 	if req.Name != nil && *req.Name != existing.Name {
-		duplicate, err := s.permissionRepository.GetByName(ctx, *req.Name)
-		if err != nil {
-			return nil, err
+		duplicate, dupErr := s.permissionRepository.GetByName(ctx, *req.Name)
+		if dupErr != nil {
+			return nil, dupErr
 		}
 
 		if duplicate != nil {
