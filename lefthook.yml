@@ -26,10 +26,10 @@ pre-push:
   commands:
     test:
       run: go test -v ./...
-      
+
     lint:
       run: golangci-lint run ./...
-      
+
     security-scan:
       run: |
         if command -v snyk &> /dev/null; then

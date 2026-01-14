@@ -29,11 +29,11 @@ invoke_api() {
     local url="$BASE_URL$endpoint"
 
     local curl_args=("-s" "-X" "$method" "$url" "-H" "Content-Type: application/json")
-    
+
     if [[ -n "$token" ]]; then
         curl_args+=("-H" "Authorization: Bearer $token")
     fi
-    
+
     if [[ -n "$body" ]]; then
         curl_args+=("-d" "$body")
     fi
@@ -82,15 +82,15 @@ declare -A tokens
 
 for role in "${!test_users[@]}"; do
     IFS='|' read -r email password <<< "${test_users[$role]}"
-    
+
     local login_body=$(cat <<EOF
 {"email":"$email","password":"$password"}
 EOF
 )
-    
+
     response=$(invoke_api "POST" "/auth/login" "" "$login_body" "Login as $role")
     token=$(echo "$response" | grep -o '"token":"[^"]*"' | cut -d'"' -f4)
-    
+
     if [[ -n "$token" ]]; then
         tokens[$role]="$token"
     fi

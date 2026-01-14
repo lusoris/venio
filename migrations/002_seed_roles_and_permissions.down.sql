@@ -1,9 +1,9 @@
 -- Remove role-permission assignments
-DELETE FROM role_permissions 
+DELETE FROM role_permissions
 WHERE role_id IN (SELECT id FROM roles WHERE name IN ('admin', 'moderator', 'user', 'guest'));
 
 -- Remove default permissions
-DELETE FROM permissions 
+DELETE FROM permissions
 WHERE name IN (
   'users:read', 'users:write', 'users:delete',
   'roles:read', 'roles:write', 'roles:delete',

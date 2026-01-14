@@ -39,11 +39,11 @@ function invoke_api
     set -l url "$BASE_URL$endpoint"
 
     set -l curl_args -s -X $method "$url" -H "Content-Type: application/json"
-    
+
     if test -n "$token"
         set curl_args $curl_args -H "Authorization: Bearer $token"
     end
-    
+
     if test -n "$body"
         set curl_args $curl_args -d "$body"
     end
@@ -95,12 +95,12 @@ for i in (seq 1 4 (count $test_users))
     set -l role $test_users[$i]
     set -l email $test_users[(math $i + 1)]
     set -l password $test_users[(math $i + 2)]
-    
+
     set -l login_body "{\"email\":\"$email\",\"password\":\"$password\"}"
-    
+
     set -l response (invoke_api "POST" "/auth/login" "" "$login_body" "Login as $role" 2>/dev/null)
     set -l token (echo "$response" | grep -o '"token":"[^"]*"' | cut -d'"' -f4)
-    
+
     if test -n "$token"
         set tokens_$role "$token"
     end

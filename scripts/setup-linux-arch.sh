@@ -100,7 +100,7 @@ if command -v go &> /dev/null; then
     print_success "Go already installed: $CURRENT_GO"
 else
     echo -n "Installing Go from Arch repository... "
-    
+
     if pacman -S go --noconfirm &>/dev/null 2>&1; then
         print_success ""
         print_info "Go installed"
@@ -122,12 +122,12 @@ if command -v node &> /dev/null; then
     print_success "Node.js already installed: $NODE_VERSION"
 else
     echo -n "Installing Node.js from Arch repository... "
-    
+
     if pacman -S nodejs npm --noconfirm &>/dev/null 2>&1; then
         print_success ""
         NODE_VERSION=$(node -v)
         print_info "Node.js $NODE_VERSION installed"
-        
+
         # Update npm
         npm install -g npm@latest &>/dev/null
     else
@@ -146,14 +146,14 @@ if command -v docker &> /dev/null; then
     print_success "Docker already installed: $DOCKER_VERSION"
 else
     echo -n "Installing Docker from Arch repository... "
-    
+
     if pacman -S docker docker-compose --noconfirm &>/dev/null 2>&1; then
         print_success ""
-        
+
         # Enable docker daemon
         systemctl enable docker
         systemctl start docker
-        
+
         # Add current user to docker group
         if [[ -n "$SUDO_USER" ]]; then
             usermod -aG docker "$SUDO_USER"
@@ -205,7 +205,7 @@ toolsFailed=0
 for tool in "${goTools[@]}"; do
     IFS='|' read -r name package <<< "$tool"
     echo -n "Installing $name... "
-    
+
     if go install "$package" &>/dev/null; then
         print_success ""
         ((toolsInstalled++))
@@ -233,7 +233,7 @@ npmFailed=0
 
 for tool in "${npmTools[@]}"; do
     echo -n "Installing $tool... "
-    
+
     if npm install -g "$tool" &>/dev/null; then
         print_success ""
         ((npmInstalled++))
@@ -267,7 +267,7 @@ unverified=0
 for check in "${checks[@]}"; do
     IFS='|' read -r name command <<< "$check"
     echo -n "Checking $name... "
-    
+
     if output=$($command 2>/dev/null); then
         print_success ""
         print_info "  $output"

@@ -117,26 +117,26 @@ if command -v go &> /dev/null; then
     fi
 else
     echo -n "Downloading Go $GO_VERSION for $GO_ARCH... "
-    
+
     GO_URL="https://go.dev/dl/go${GO_VERSION}.linux-${GO_ARCH}.tar.gz"
     GO_TAR="/tmp/go${GO_VERSION}.tar.gz"
-    
+
     if wget -q "$GO_URL" -O "$GO_TAR"; then
         print_success ""
         echo -n "Installing Go... "
         rm -rf /usr/local/go
         tar -C /usr/local -xzf "$GO_TAR"
         rm "$GO_TAR"
-        
+
         # Add to PATH
         if ! grep -q "export PATH.*go/bin" /etc/profile.d/venio.sh 2>/dev/null; then
             echo 'export PATH=$PATH:/usr/local/go/bin:$HOME/go/bin' > /etc/profile.d/venio.sh
             chmod +x /etc/profile.d/venio.sh
         fi
-        
+
         # Source for current session
         export PATH=$PATH:/usr/local/go/bin:$HOME/go/bin
-        
+
         print_success ""
         print_info "Go $GO_VERSION installed at /usr/local/go"
     else
@@ -156,15 +156,15 @@ if command -v node &> /dev/null; then
     print_success "Node.js already installed: $NODE_VERSION"
 else
     echo -n "Installing Node.js from NodeSource... "
-    
+
     # Add NodeSource repository
     curl -fsSL https://deb.nodesource.com/setup_22.x | bash - &>/dev/null
-    
+
     if apt-get install -qq -y nodejs 2>/dev/null; then
         print_success ""
         NODE_VERSION=$(node -v)
         print_info "Node.js $NODE_VERSION installed"
-        
+
         # Update npm
         npm install -g npm@latest &>/dev/null
     else
@@ -183,20 +183,20 @@ if command -v docker &> /dev/null; then
     print_success "Docker already installed: $DOCKER_VERSION"
 else
     echo -n "Installing Docker from Docker repository... "
-    
+
     # Add Docker GPG key
     mkdir -p /etc/apt/keyrings
     curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker-archive-keyring.gpg 2>/dev/null
-    
+
     # Add Docker repository
     echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
-    
+
     apt-get update -qq
-    
+
     if apt-get install -qq -y docker-ce docker-ce-cli containerd.io docker-compose-plugin 2>/dev/null; then
         print_success ""
         print_info "Docker installed"
-        
+
         # Add current user to docker group
         if [[ -n "$SUDO_USER" ]]; then
             usermod -aG docker "$SUDO_USER"
@@ -242,7 +242,7 @@ toolsFailed=0
 for tool in "${goTools[@]}"; do
     IFS='|' read -r name package <<< "$tool"
     echo -n "Installing $name... "
-    
+
     if go install "$package" &>/dev/null; then
         print_success ""
         ((toolsInstalled++))
@@ -270,7 +270,7 @@ npmFailed=0
 
 for tool in "${npmTools[@]}"; do
     echo -n "Installing $tool... "
-    
+
     if npm install -g "$tool" &>/dev/null; then
         print_success ""
         ((npmInstalled++))
@@ -305,7 +305,7 @@ unverified=0
 for check in "${checks[@]}"; do
     IFS='|' read -r name command <<< "$check"
     echo -n "Checking $name... "
-    
+
     if output=$($command 2>/dev/null); then
         print_success ""
         print_info "  $output"

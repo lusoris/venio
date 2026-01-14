@@ -18,6 +18,26 @@ docker compose up postgres redis -d
 go run cmd/venio/main.go
 ```
 
+### macOS
+```bash
+# 1. Install Homebrew (if not already installed):
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+# 2. Run the setup script:
+bash scripts/setup-macos-dev.sh
+
+# 3. Start Docker Desktop from Applications/Docker.app
+
+# 4. Reload your shell:
+source ~/.zshrc  # or ~/.bashrc / ~/.config/fish/config.fish
+
+# 5. Clone and run:
+git clone https://github.com/lusoris/venio.git
+cd venio
+docker compose up postgres redis -d
+go run cmd/venio/main.go
+```
+
 ### Linux - Debian/Ubuntu
 ```bash
 # 1. Run with sudo:
@@ -43,6 +63,24 @@ newgrp docker
 source ~/.bashrc  # or ~/.zshrc / ~/.config/fish/config.fish
 
 # 3. Clone and run:
+git clone https://github.com/lusoris/venio.git
+cd venio
+docker compose up postgres redis -d
+go run cmd/venio/main.go
+```
+
+### Linux - Fedora/RHEL/CentOS
+```bash
+# 1. Run with sudo:
+sudo bash scripts/setup-fedora-dev.sh
+
+# 2. Apply group changes:
+newgrp docker
+
+# 3. Reload your shell:
+source /etc/profile.d/venio.sh
+
+# 4. Clone and run:
 git clone https://github.com/lusoris/venio.git
 cd venio
 docker compose up postgres redis -d
@@ -98,6 +136,20 @@ All setup scripts install:
 - 8GB RAM minimum (16GB recommended)
 - 20GB free disk space
 - sudo access
+
+### Linux - Fedora/RHEL/CentOS
+- Fedora 39+ (recommended) or RHEL 9+ or CentOS Stream 9+
+- 8GB RAM minimum (16GB recommended)
+- 20GB free disk space
+- sudo access
+- Supported architectures: x86_64, ARM64
+
+### macOS
+- macOS 11.0 or later (12.0+ recommended for M1/M2 support)
+- 8GB RAM minimum (16GB recommended)
+- 20GB free disk space
+- Homebrew installed
+- Intel or Apple Silicon (M1/M2/M3)
 - Supported architectures: x86_64, ARM64
 
 ## Manual Installation
@@ -467,7 +519,7 @@ docker compose up -d
 
 ---
 
-**Last Updated:** January 2026  
+**Last Updated:** January 2026
 **Supported Platforms:** Windows 10+, Ubuntu 22.04+, Debian 12+, Arch Linux
-**Go Version:** 1.25 (latest stable)  
+**Go Version:** 1.25 (latest stable)
 **Node.js Version:** LTS (currently 22.x)
