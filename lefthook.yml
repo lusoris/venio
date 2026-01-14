@@ -4,11 +4,11 @@ pre-commit:
     format:
       glob: "*.go"
       run: goimports -w {staged_files} && git add {staged_files}
-    
+
     lint:
       glob: "*.go"
-      run: golangci-lint run --fix {staged_files}
-    
+      run: golangci-lint run --fix ./...
+
     test:
       glob: "*.go"
       run: go test ./...
@@ -17,6 +17,6 @@ pre-push:
   commands:
     test:
       run: make test
-    
+
     lint:
       run: make lint

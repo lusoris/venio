@@ -24,15 +24,15 @@ func main() {
 
 	log.Println("🔧 Starting Venio Worker...")
 	log.Printf("Version: %s", version)
-	
+
 	// TODO: Initialize configuration
 	// TODO: Initialize database connection
 	// TODO: Initialize job queue (asynq)
 	// TODO: Register job handlers
 	// TODO: Start worker
-	
+
 	log.Println("✅ Venio Worker running")
-	
+
 	// Keep running
 	select {}
 }

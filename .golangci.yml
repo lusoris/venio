@@ -12,11 +12,11 @@ linters:
     - ineffassign
     - staticcheck
     - unused
-    
+
     # Formatting
     - gofmt
     - goimports
-    
+
     # Code quality
     - misspell
     - unconvert
@@ -26,13 +26,14 @@ linters:
 linters-settings:
   errcheck:
     check-blank: true
-  
+
   govet:
-    check-shadowing: true
-  
+    enable:
+      - shadow
+
   goimports:
     local-prefixes: github.com/lusoris/venio
-  
+
   misspell:
     locale: US
 
@@ -40,7 +41,7 @@ issues:
   exclude-use-default: false
   max-issues-per-linter: 0
   max-same-issues: 0
-  
+
   exclude-rules:
     # Exclude some linters from running on tests files
     - path: _test\.go
