@@ -9,6 +9,8 @@ export default function RegisterPage() {
   const [formData, setFormData] = useState({
     username: '',
     email: '',
+    first_name: '',
+    last_name: '',
     password: '',
     confirmPassword: '',
   });
@@ -40,6 +42,8 @@ export default function RegisterPage() {
       await register({
         username: formData.username,
         email: formData.email,
+        first_name: formData.first_name,
+        last_name: formData.last_name,
         password: formData.password,
       });
     } catch (err) {
@@ -82,6 +86,38 @@ export default function RegisterPage() {
                 className="appearance-none relative block w-full px-3 py-3 border border-gray-700 placeholder-gray-500 text-white bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="Username"
               />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label htmlFor="first_name" className="sr-only">
+                  First Name
+                </label>
+                <input
+                  id="first_name"
+                  name="first_name"
+                  type="text"
+                  required
+                  value={formData.first_name}
+                  onChange={handleChange}
+                  className="appearance-none relative block w-full px-3 py-3 border border-gray-700 placeholder-gray-500 text-white bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="First Name"
+                />
+              </div>
+              <div>
+                <label htmlFor="last_name" className="sr-only">
+                  Last Name
+                </label>
+                <input
+                  id="last_name"
+                  name="last_name"
+                  type="text"
+                  required
+                  value={formData.last_name}
+                  onChange={handleChange}
+                  className="appearance-none relative block w-full px-3 py-3 border border-gray-700 placeholder-gray-500 text-white bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Last Name"
+                />
+              </div>
             </div>
             <div>
               <label htmlFor="email" className="sr-only">
