@@ -41,43 +41,86 @@ docker compose up -d
 
 ## 📚 Documentation
 
+### Quick Links
+- **[Windows Setup Guide](docs/windows-setup.md)** - Automated setup for Windows developers (includes GNU Make installation)
+- **[Development Guide](docs/development.md)** - Complete setup for all platforms
+- **[API Documentation](docs/api.md)** - All endpoints with examples
+- **[Architecture Overview](docs/architecture.md)** - System design & components
+- **[Configuration Reference](docs/configuration.md)** - Environment variables
+- **[Project Guidelines](docs/project-guidelines.md)** - Coding standards & AI instructions
+- **[Project Status](docs/PROJECT_STATUS.md)** - Complete implementation status & metrics
+
+### Full Documentation
 - [Installation Guide](https://github.com/lusoris/venio/wiki/Installation)
 - [Configuration Reference](https://github.com/lusoris/venio/wiki/Configuration)
 - [User Manual](https://github.com/lusoris/venio/wiki/User-Manual)
-- [API Documentation](https://github.com/lusoris/venio/wiki/API)
-- [Development Guide](docs/development.md)
-- [Architecture Overview](docs/architecture.md)
 
 ## 🗺️ Roadmap
 
-### MVP (Current Phase)
+### MVP (Current Phase) ✅ COMPLETE
 - [x] Project Setup & Template
 - [x] Configuration System (Viper)
 - [x] Database Connection (PostgreSQL + pgx)
 - [x] Core Data Models (User, Role, Permission)
 - [x] User Repository & CRUD operations
 - [x] User Service (Business Logic)
-- [x] Authentication Service (JWT)
+- [x] Authentication Service (JWT + Refresh Tokens)
 - [x] REST API Handlers & Middleware
 - [x] Database Migrations
-- [ ] Role & Permission Management
-- [ ] Unit Tests
+- [x] Frontend with Next.js & React
+- [x] Login/Register UI Components
+- [x] Protected Dashboard
+- [x] Windows Development Setup Guide
+- [x] Comprehensive Documentation
+
+### Next Phase 🔄 IN PROGRESS
+- [ ] Role & Permission Management UI
+- [ ] Admin Panel
+- [ ] Unit Tests (Go & TypeScript)
 - [ ] Overseerr Integration (Movies/TV)
 - [ ] Lidarr Integration (Music)
 - [ ] Whisparr Integration (Adult)
-- [ ] Basic Request System
-- [ ] Metadata Proxy
+
+### Future Features 📋
+- [ ] Request System (auto-approval, merging)
+- [ ] Community Voting
+- [ ] Content Lifecycle Management
+- [ ] Metadata Enrichment
+- [ ] Parental Controls
+- [ ] Watch Parties & Collections
 
 See the full [Roadmap](https://github.com/lusoris/venio/wiki/Roadmap) for planned features.
 
 ## 🛠️ Development
 
+### Windows Users (Recommended)
+```powershell
+# Automated setup (installs Go, Docker, Make, and all tools)
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser -Force
+.\scripts\setup-windows-dev.ps1
+
+# Then follow quick start below
+```
+
+See [Windows Setup Guide](docs/windows-setup.md) for detailed instructions.
+
+### All Platforms
 ```bash
 # Install dependencies
-make
+make install
 
 # Run development environment
 make dev
+
+# Run tests
+make test
+
+# Run linter
+make lint
+
+# Build
+make build
+```
 
 # Run tests
 make test

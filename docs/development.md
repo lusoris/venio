@@ -2,6 +2,8 @@
 
 This guide covers setting up a development environment for Venio.
 
+> **Windows Users:** See [Windows Setup Guide](windows-setup.md) for automated setup with `setup-windows-dev.ps1`
+
 ## Prerequisites
 
 ### Required
@@ -14,20 +16,36 @@ This guide covers setting up a development environment for Venio.
 ### Recommended
 
 - **VSCode** with Go extension
-- **Make** (usually pre-installed on Linux/macOS)
+- **Make** (usually pre-installed on Linux/macOS, [install on Windows](windows-setup.md#4-install-gnu-make))
 - **golangci-lint** - [Install](https://golangci-lint.run/usage/install/)
 - **air** (hot reload) - `go install github.com/cosmtrek/air@latest`
 
 ## Initial Setup
 
-### 1. Clone Repository
+### Windows Users
+
+For Windows development, use the automated setup script:
+
+```powershell
+# Run as Administrator
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser -Force
+.\scripts\setup-windows-dev.ps1
+```
+
+This will install Go, Docker, Git, Make, and all development tools automatically.
+
+See [Windows Setup Guide](windows-setup.md) for detailed instructions.
+
+### Linux/macOS Users
+
+#### 1. Clone Repository
 
 ```bash
 git clone https://github.com/lusoris/venio.git
 cd venio
 ```
 
-### 2. Install Development Tools
+#### 2. Install Development Tools
 
 ```bash
 # Go tools
