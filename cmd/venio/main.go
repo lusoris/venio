@@ -16,8 +16,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/gin-gonic/gin"
-
+	"github.com/lusoris/venio/internal/api"
 	"github.com/lusoris/venio/internal/config"
 	"github.com/lusoris/venio/internal/database"
 )
@@ -40,11 +39,6 @@ func main() {
 	}
 	cfg.LogConfig()
 
-	// Set Gin mode
-	if cfg.App.Env == "production" {
-		gin.SetMode(gin.ReleaseMode)
-	}
-
 	// Create context with timeout
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -60,24 +54,8 @@ func main() {
 		}
 	}()
 
-	// Create Gin router
-	router := gin.New()
-	router.Use(gin.Logger())
-	router.Use(gin.Recovery())
-
-	// Health check endpoint
-	router.GET("/health", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"status":  "ok",
-			"app":     cfg.App.Name,
-			"version": cfg.App.Version,
-		})
-	})
-
-	// TODO: Register API routes
-	// v1 := router.Group("/api/v1")
-	// v1.POST("/auth/register", handlers.Register)
-	// v1.POST("/auth/login", handlers.Login)
+	// Setup router with all routes
+	router := api.SetupRouter(cfg, db)
 
 	// Start server
 	addr := fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.Port)
