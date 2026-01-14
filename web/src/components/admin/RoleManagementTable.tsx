@@ -36,7 +36,7 @@ export default function RoleManagementTable({
         {
           method: "DELETE",
           headers: {
-            Authorization: `Bearer ${token}`,
+            "Authorization": `Bearer ${token}`,
           },
         }
       );

@@ -110,8 +110,9 @@ export default function AdminDashboard() {
             <div className="flex justify-between">
               <span className="text-gray-400">Your Role:</span>
               <span className="text-green-400 font-medium">
-                {user?.roles?.[0]?.charAt(0).toUpperCase() +
-                  user?.roles?.[0]?.slice(1) || "Unknown"}
+                {user?.roles && user.roles.length > 0
+                  ? user.roles[0].charAt(0).toUpperCase() + user.roles[0].slice(1)
+                  : "Unknown"}
               </span>
             </div>
           </div>

@@ -9,6 +9,7 @@ export interface User {
   last_name: string;
   avatar?: string;
   is_active: boolean;
+  roles?: string[];
   created_at: string;
   updated_at: string;
 }
@@ -68,9 +69,9 @@ class ApiClient {
     endpoint: string,
     options: RequestInit = {}
   ): Promise<T> {
-    const headers: HeadersInit = {
+    const headers: Record<string, string> = {
       'Content-Type': 'application/json',
-      ...options.headers,
+      ...(options.headers as Record<string, string>),
     };
 
     if (this.accessToken) {

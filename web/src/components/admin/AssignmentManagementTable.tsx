@@ -32,7 +32,7 @@ export default function AssignmentManagementTable({ assignments, onRefresh }: Pr
         {
           method: "DELETE",
           headers: {
-            Authorization: `Bearer ${token}`,
+            "Authorization": `Bearer ${token}`,
           },
         }
       );

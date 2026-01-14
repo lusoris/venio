@@ -21,8 +21,8 @@ export default function DashboardPage() {
     const fetchUsers = async () => {
       try {
         setLoading(true);
-        const data = await apiClient.getUsers({ page: 1, limit: 10 });
-        setUsers(data.users);
+        const data = await apiClient.getUsers(10, 0);
+        setUsers(data);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load users');
       } finally {

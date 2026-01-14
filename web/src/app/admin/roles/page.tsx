@@ -41,7 +41,7 @@ export default function RolesPage() {
         `${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/roles`,
         {
           headers: {
-            Authorization: `Bearer ${token}`,
+            "Authorization": `Bearer ${token}`,
             "Content-Type": "application/json",
           },
         }

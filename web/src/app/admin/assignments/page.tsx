@@ -40,7 +40,7 @@ export default function AssignmentsPage() {
         `${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/user-roles`,
         {
           headers: {
-            Authorization: `Bearer ${token}`,
+            "Authorization": `Bearer ${token}`,
             "Content-Type": "application/json",
           },
         }

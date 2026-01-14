@@ -37,7 +37,7 @@ export default function UserManagementTable({
         {
           method: "DELETE",
           headers: {
-            Authorization: `Bearer ${token}`,
+            "Authorization": `Bearer ${token}`,
           },
         }
       );
