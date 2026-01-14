@@ -57,10 +57,10 @@ docker compose up -d
 
 ## 🗺️ Roadmap
 
-### MVP (Current Phase) ✅ COMPLETE
+### MVP Phase ✅ COMPLETE
 - [x] Project Setup & Template
 - [x] Configuration System (Viper)
-- [x] Database Connection (PostgreSQL + pgx)
+- [x] Database Connection (PostgreSQL 18.1 + pgx)
 - [x] Core Data Models (User, Role, Permission)
 - [x] User Repository & CRUD operations
 - [x] User Service (Business Logic)
@@ -73,15 +73,21 @@ docker compose up -d
 - [x] Windows Development Setup Guide
 - [x] Comprehensive Documentation
 
-### Next Phase 🔄 IN PROGRESS
+### Phase 2: RBAC System 🎯 IN PROGRESS
+- [x] Role Management (CRUD)
+- [x] Permission Management (CRUD)
+- [x] User-Role Assignments
+- [x] RBAC Middleware (4 authorization methods)
+- [x] Complete API Endpoints (24 new endpoints)
+- [x] Database Schema & Migrations
+- [ ] Admin Panel UI
 - [ ] Role & Permission Management UI
-- [ ] Admin Panel
 - [ ] Unit Tests (Go & TypeScript)
+
+### Phase 3: Integration (📋 Planned)
 - [ ] Overseerr Integration (Movies/TV)
 - [ ] Lidarr Integration (Music)
 - [ ] Whisparr Integration (Adult)
-
-### Future Features 📋
 - [ ] Request System (auto-approval, merging)
 - [ ] Community Voting
 - [ ] Content Lifecycle Management

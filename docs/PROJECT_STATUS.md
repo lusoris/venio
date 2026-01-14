@@ -1,32 +1,34 @@
 # Venio Project Status & Implementation Summary
 
 **Project:** Venio - Unified Media Management System
-**Date:** January 14, 2026
-**Status:** MVP Phase - Core Authentication Complete
+**Date:** January 15, 2026
+**Status:** Phase 2 - RBAC Implementation Complete
 **Repository:** https://github.com/lusoris/venio
 
 ---
 
 ## Executive Summary
 
-Venio MVP is fully functional with complete user authentication system (registration, login, JWT tokens) and protected endpoints. Backend API tested and working. Frontend UI components created with full integration to backend. All components documented with comprehensive setup guides for Windows development.
+Venio MVP Phase 1 complete with full authentication system. **Phase 2 RBAC backend** now fully implemented with complete role and permission management system. All RBAC repositories, services, handlers, and middleware are functional. Backend uses latest stable versions: PostgreSQL 18.1 and Redis 8.4 with CalVer versioning (2026.01.0).
 
-**Current Commit:** `fa9a350` on `develop` branch
+**Current Commit:** `76c5df9` on `develop` branch
 
 ---
 
-## Completed Features (MVP)
+## Completed Features (MVP + Phase 2)
 
 ### ✅ Backend Infrastructure
 
 | Component | Status | Details |
 |-----------|--------|---------|
-| **Go Setup** | Complete | Go 1.23+ with Gin 1.10.0 framework |
+| **Go Setup** | Complete | Go 1.25+ with Gin 1.10.0 framework |
 | **Configuration** | Complete | Viper with .env support, validation |
-| **Database Connection** | Complete | PostgreSQL 16 with pgx v5 + pgxpool |
+| **Database Connection** | Complete | PostgreSQL 18.1 with pgx v5 + pgxpool |
 | **Authentication Service** | Complete | JWT with access (24h) & refresh (7d) tokens |
 | **Authorization Middleware** | Complete | Bearer token validation, user context injection |
-| **Docker Compose** | Complete | PostgreSQL 16-alpine, Redis 7-alpine, networking configured |
+| **RBAC Middleware** | Complete | Role/permission checks (4 methods) |
+| **Docker Compose** | Complete | PostgreSQL 18.1-alpine, Redis 8.4-alpine, networking configured |
+| **Versioning** | Complete | CalVer format (YYYY.MM.PATCH) - currently 2026.01.0 |
 
 ### ✅ Data Layer
 
@@ -36,7 +38,20 @@ Venio MVP is fully functional with complete user authentication system (registra
 | **Migrations** | Complete | 001_initial_schema.up/down.sql with indexes and constraints |
 | **Models** | Complete | User, Role, Permission, LoginRequest, CreateUserRequest, JWT Claims |
 | **User Repository** | Complete | CRUD operations with parameterized queries |
+| **Role Repository** | Complete | Full CRUD + GetByName, GetPermissions (221 lines) |
+| **Permission Repository** | Complete | Full CRUD + GetByName, GetByUserID, AssignToRole (257 lines) |
+| **UserRole Repository** | Complete | AssignRole, RemoveRole, GetUserRoles, HasRole, HasPermission (150 lines) |
 | **Seed Data** | Complete | Admin user + 3 roles + 8 permissions pre-loaded |
+
+### ✅ Business Logic (Services)
+
+| Service | Status | Details |
+|---------|--------|---------|
+| **User Service** | Complete | User management, basic operations |
+| **Auth Service** | Complete | JWT generation, validation, refresh |
+| **Role Service** | Complete | Create, Update, Delete, List, GetPermissions |
+| **Permission Service** | Complete | Create, Update, Delete, List, validation |
+| **UserRole Service** | Complete | AssignRole, RemoveRole, HasRole, HasPermission checks |
 
 ### ✅ API Layer
 
@@ -50,6 +65,22 @@ Venio MVP is fully functional with complete user authentication system (registra
 | `/api/v1/users/:id` | GET | Complete | Yes | Get single user |
 | `/api/v1/users/:id` | PUT | Complete | Yes | Update user |
 | `/api/v1/users/:id` | DELETE | Complete | Yes | Delete user |
+| `/api/v1/roles` | POST | Complete | Admin | Create role |
+| `/api/v1/roles` | GET | Complete | Admin | List roles (paginated) |
+| `/api/v1/roles/:id` | GET | Complete | Admin | Get role details |
+| `/api/v1/roles/:id` | PUT | Complete | Admin | Update role |
+| `/api/v1/roles/:id` | DELETE | Complete | Admin | Delete role |
+| `/api/v1/roles/:id/permissions` | GET | Complete | Admin | Get role permissions |
+| `/api/v1/roles/:id/permissions` | POST | Complete | Admin | Assign permission to role |
+| `/api/v1/roles/:roleId/permissions/:permissionId` | DELETE | Complete | Admin | Remove permission from role |
+| `/api/v1/permissions` | POST | Complete | Admin | Create permission |
+| `/api/v1/permissions` | GET | Complete | Admin | List permissions (paginated) |
+| `/api/v1/permissions/:id` | GET | Complete | Admin | Get permission details |
+| `/api/v1/permissions/:id` | PUT | Complete | Admin | Update permission |
+| `/api/v1/permissions/:id` | DELETE | Complete | Admin | Delete permission |
+| `/api/v1/users/:userId/roles` | GET | Complete | Auth/Admin | Get user roles |
+| `/api/v1/users/:userId/roles` | POST | Complete | Admin | Assign role to user |
+| `/api/v1/users/:userId/roles/:roleId` | DELETE | Complete | Admin | Remove role from user |
 
 ### ✅ Frontend Infrastructure
 
@@ -140,7 +171,7 @@ cacfd7a (origin/develop) docs: add comprehensive API documentation
 ## Technology Stack
 
 ### Backend
-- **Language:** Go 1.25.5
+- **Language:** Go 1.25
 - **Web Framework:** Gin 1.10.0
 - **Database Driver:** pgx v5
 - **Connection Pooling:** pgxpool
@@ -164,11 +195,12 @@ cacfd7a (origin/develop) docs: add comprehensive API documentation
 - **Formatting:** Prettier (via ESLint)
 
 ### Infrastructure
-- **Database:** PostgreSQL 16-alpine (Docker)
-- **Cache:** Redis 7-alpine (Docker)
+- **Database:** PostgreSQL 18.1-alpine (Docker)
+- **Cache:** Redis 8.4-alpine (Docker)
 - **Container Runtime:** Docker 29.1.3
 - **Orchestration:** Docker Compose
 - **Version Control:** Git
+- **Versioning Scheme:** CalVer (YYYY.MM.PATCH)
 
 ### Development Tools
 - **OS:** Windows 10/11 (with full support via setup scripts)
@@ -176,7 +208,7 @@ cacfd7a (origin/develop) docs: add comprehensive API documentation
 - **Editor:** VSCode with extensions
 - **Package Manager:** winget (Windows)
 - **Build System:** GNU Make 3.81
-- **Git Hooks:** Lefthook 1.13.6
+- **Git Hooks:** Lefthook 1.13.6 (fixed, no make dependency)
 
 ---
 

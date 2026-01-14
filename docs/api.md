@@ -179,6 +179,352 @@ Delete a user by ID.
 
 **Response:** `204 No Content`
 
+## Roles & Permissions (RBAC)
+
+### Role Endpoints
+
+All role endpoints require admin authentication.
+
+#### Create Role
+Create a new role.
+
+**Endpoint:** `POST /roles`
+
+**Authorization:** Requires `admin` role
+
+**Request Body:**
+```json
+{
+  "name": "moderator",
+  "description": "Content moderator with limited admin rights"
+}
+```
+
+**Response:** `201 Created`
+```json
+{
+  "id": 4,
+  "name": "moderator",
+  "description": "Content moderator with limited admin rights",
+  "created_at": "2026-01-14T15:00:00Z",
+  "updated_at": "2026-01-14T15:00:00Z"
+}
+```
+
+#### List Roles
+Get a paginated list of all roles.
+
+**Endpoint:** `GET /roles?page=1&limit=10`
+
+**Authorization:** Requires `admin` role
+
+**Query Parameters:**
+- `page` (optional): Page number (default: 1)
+- `limit` (optional): Items per page (default: 10, max: 100)
+
+**Response:** `200 OK`
+```json
+[
+  {
+    "id": 1,
+    "name": "admin",
+    "description": "Full system administrator",
+    "created_at": "2026-01-14T12:00:00Z",
+    "updated_at": "2026-01-14T12:00:00Z"
+  },
+  {
+    "id": 2,
+    "name": "user",
+    "description": "Standard user with basic permissions",
+    "created_at": "2026-01-14T12:00:00Z",
+    "updated_at": "2026-01-14T12:00:00Z"
+  }
+]
+```
+
+#### Get Role
+Get a specific role by ID.
+
+**Endpoint:** `GET /roles/:id`
+
+**Authorization:** Requires `admin` role
+
+**Response:** `200 OK`
+```json
+{
+  "id": 1,
+  "name": "admin",
+  "description": "Full system administrator",
+  "created_at": "2026-01-14T12:00:00Z",
+  "updated_at": "2026-01-14T12:00:00Z"
+}
+```
+
+#### Update Role
+Update role information.
+
+**Endpoint:** `PUT /roles/:id`
+
+**Authorization:** Requires `admin` role
+
+**Request Body:**
+```json
+{
+  "name": "super_admin",
+  "description": "Super administrator with all permissions"
+}
+```
+
+**Response:** `200 OK`
+```json
+{
+  "id": 1,
+  "name": "super_admin",
+  "description": "Super administrator with all permissions",
+  "created_at": "2026-01-14T12:00:00Z",
+  "updated_at": "2026-01-14T15:30:00Z"
+}
+```
+
+#### Delete Role
+Delete a role by ID.
+
+**Endpoint:** `DELETE /roles/:id`
+
+**Authorization:** Requires `admin` role
+
+**Response:** `204 No Content`
+
+#### Get Role Permissions
+Get all permissions assigned to a role.
+
+**Endpoint:** `GET /roles/:id/permissions`
+
+**Authorization:** Requires `admin` role
+
+**Response:** `200 OK`
+```json
+[
+  {
+    "id": 1,
+    "name": "user:read",
+    "description": "Read user information",
+    "created_at": "2026-01-14T12:00:00Z",
+    "updated_at": "2026-01-14T12:00:00Z"
+  },
+  {
+    "id": 2,
+    "name": "user:write",
+    "description": "Create and modify users",
+    "created_at": "2026-01-14T12:00:00Z",
+    "updated_at": "2026-01-14T12:00:00Z"
+  }
+]
+```
+
+#### Assign Permission to Role
+Add a permission to a role.
+
+**Endpoint:** `POST /roles/:id/permissions`
+
+**Authorization:** Requires `admin` role
+
+**Request Body:**
+```json
+{
+  "permission_id": 5
+}
+```
+
+**Response:** `200 OK`
+```json
+{
+  "message": "Permission assigned to role successfully"
+}
+```
+
+#### Remove Permission from Role
+Remove a permission from a role.
+
+**Endpoint:** `DELETE /roles/:roleId/permissions/:permissionId`
+
+**Authorization:** Requires `admin` role
+
+**Response:** `204 No Content`
+
+### Permission Endpoints
+
+All permission endpoints require admin authentication.
+
+#### Create Permission
+Create a new permission.
+
+**Endpoint:** `POST /permissions`
+
+**Authorization:** Requires `admin` role
+
+**Request Body:**
+```json
+{
+  "name": "media:delete",
+  "description": "Delete media items"
+}
+```
+
+**Response:** `201 Created`
+```json
+{
+  "id": 9,
+  "name": "media:delete",
+  "description": "Delete media items",
+  "created_at": "2026-01-14T15:00:00Z",
+  "updated_at": "2026-01-14T15:00:00Z"
+}
+```
+
+#### List Permissions
+Get a paginated list of all permissions.
+
+**Endpoint:** `GET /permissions?page=1&limit=10`
+
+**Authorization:** Requires `admin` role
+
+**Query Parameters:**
+- `page` (optional): Page number (default: 1)
+- `limit` (optional): Items per page (default: 10, max: 100)
+
+**Response:** `200 OK`
+```json
+[
+  {
+    "id": 1,
+    "name": "user:read",
+    "description": "Read user information",
+    "created_at": "2026-01-14T12:00:00Z",
+    "updated_at": "2026-01-14T12:00:00Z"
+  },
+  {
+    "id": 2,
+    "name": "user:write",
+    "description": "Create and modify users",
+    "created_at": "2026-01-14T12:00:00Z",
+    "updated_at": "2026-01-14T12:00:00Z"
+  }
+]
+```
+
+#### Get Permission
+Get a specific permission by ID.
+
+**Endpoint:** `GET /permissions/:id`
+
+**Authorization:** Requires `admin` role
+
+**Response:** `200 OK`
+```json
+{
+  "id": 1,
+  "name": "user:read",
+  "description": "Read user information",
+  "created_at": "2026-01-14T12:00:00Z",
+  "updated_at": "2026-01-14T12:00:00Z"
+}
+```
+
+#### Update Permission
+Update permission information.
+
+**Endpoint:** `PUT /permissions/:id`
+
+**Authorization:** Requires `admin` role
+
+**Request Body:**
+```json
+{
+  "name": "user:read:all",
+  "description": "Read all user information including sensitive data"
+}
+```
+
+**Response:** `200 OK`
+```json
+{
+  "id": 1,
+  "name": "user:read:all",
+  "description": "Read all user information including sensitive data",
+  "created_at": "2026-01-14T12:00:00Z",
+  "updated_at": "2026-01-14T15:45:00Z"
+}
+```
+
+#### Delete Permission
+Delete a permission by ID.
+
+**Endpoint:** `DELETE /permissions/:id`
+
+**Authorization:** Requires `admin` role
+
+**Response:** `204 No Content`
+
+### User-Role Endpoints
+
+#### Get User Roles
+Get all roles assigned to a user.
+
+**Endpoint:** `GET /users/:userId/roles`
+
+**Authorization:** Authenticated users can view their own roles, admin can view any user's roles
+
+**Response:** `200 OK`
+```json
+[
+  {
+    "id": 1,
+    "name": "admin",
+    "description": "Full system administrator",
+    "created_at": "2026-01-14T12:00:00Z",
+    "updated_at": "2026-01-14T12:00:00Z"
+  },
+  {
+    "id": 2,
+    "name": "user",
+    "description": "Standard user with basic permissions",
+    "created_at": "2026-01-14T12:00:00Z",
+    "updated_at": "2026-01-14T12:00:00Z"
+  }
+]
+```
+
+#### Assign Role to User
+Add a role to a user.
+
+**Endpoint:** `POST /users/:userId/roles`
+
+**Authorization:** Requires `admin` role
+
+**Request Body:**
+```json
+{
+  "role_id": 2
+}
+```
+
+**Response:** `200 OK`
+```json
+{
+  "message": "Role assigned to user successfully"
+}
+```
+
+#### Remove Role from User
+Remove a role from a user.
+
+**Endpoint:** `DELETE /users/:userId/roles/:roleId`
+
+**Authorization:** Requires `admin` role
+
+**Response:** `204 No Content`
+
 ## Error Responses
 
 All errors return a consistent structure:
@@ -193,7 +539,9 @@ All errors return a consistent structure:
 **Common Status Codes:**
 - `400 Bad Request`: Invalid request data
 - `401 Unauthorized`: Missing or invalid authentication
+- `403 Forbidden`: Insufficient permissions (e.g., not admin)
 - `404 Not Found`: Resource not found
+- `409 Conflict`: Resource already exists (e.g., duplicate role name)
 - `500 Internal Server Error`: Server error
 
 ## Example Usage
@@ -266,7 +614,7 @@ Access tokens contain the following claims:
   "user_id": 1,
   "email": "user@example.com",
   "username": "johndoe",
-  "roles": [],
+  "roles": ["admin", "user"],
   "iss": "venio",
   "exp": 1768482270,
   "iat": 1768395870
@@ -276,7 +624,7 @@ Access tokens contain the following claims:
 - `user_id`: User's database ID
 - `email`: User's email address
 - `username`: User's username
-- `roles`: Array of user's roles (TODO: populated from database)
+- `roles`: Array of user's role names
 - `iss`: Token issuer (always "venio")
 - `exp`: Token expiration timestamp
 - `iat`: Token issued at timestamp

@@ -23,7 +23,17 @@
 
 ### Database
 
-**PostgreSQL Version:** 18.1
+**PostgreSQL Version:** 18.1-alpine
+
+**Key Features in PostgreSQL 18.1:**
+- **Asynchronous I/O (AIO)**: Improved performance for sequential scans, bitmap heap scans, and vacuums
+- **Skip Scan Support**: Multicolumn B-tree indexes usable in more cases (without first column restrictions)
+- **Virtual Generated Columns**: Computed during read operations (default for new generated columns)
+- **OAuth Authentication**: New authentication method support
+- **UUID v7 Generation**: Timestamp-ordered UUIDs via `uuidv7()` function
+- **Improved Vacuum/Analyze**: Enhanced performance and granular control over operations
+- **pg_upgrade Statistics**: Preserves optimizer statistics during upgrades
+- **Enhanced Parallel Execution**: Better partitionwise joins and query optimization
 
 **Policy:** Always use the latest stable version of PostgreSQL
 
@@ -34,13 +44,37 @@
 
 **Current Version:** `postgres:18.1-alpine` (Docker image)
 
-### Dependencies
+### Cache
 
-**Go Version:** 1.25.5
+**Redis Version:** 8.4-alpine
 
-**Frontend:**
-- Next.js 15.1.6
-- React 19
+**Key Features in Redis 8.4:**
+- **Enhanced Performance**: Improved throughput and latency
+- **Memory Efficiency**: Better memory management and compression
+- **Clustering Improvements**: Enhanced clustering capabilities and failover
+- **TLS/SSL Enhancements**: Stronger security for encrypted connections
+- **Extended Commands**: More backward compatibility and new features
+
+**Policy:** Latest stable version for Redis, just like PostgreSQL
+
+**Current Version:** `redis:8.4-alpine` (Docker image)
+
+### Backend
+
+**Go Version:** 1.25
+
+**Key Features in Go 1.25:**
+- **Container-aware GOMAXPROCS**: Automatically respects cgroup CPU limits
+- **New garbage collector**: Experimental GreenTea GC (10-40% performance improvement)
+- **Trace flight recorder**: Lightweight runtime execution traces
+- **DWARF5 support**: Smaller debug info, faster linking
+- **Faster slices**: Stack-allocated slice backing stores in more cases
+- **Testing improvements**: new `testing/synctest` package for concurrent code testing
+
+### Frontend
+
+**Next.js:** 16.1.1
+**React:** 19
 
 **Principle:** Use bleeding-edge stable versions for all dependencies
 - If a version is marked stable, we use it
