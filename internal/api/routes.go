@@ -35,6 +35,7 @@ func SetupRouter(cfg *config.Config, db *database.DB) *gin.Engine {
 	roleHandler := handlers.NewRoleHandler(roleService)
 	permissionHandler := handlers.NewPermissionHandler(permissionService)
 	userRoleHandler := handlers.NewUserRoleHandler(userRoleService)
+	adminHandler := handlers.NewAdminHandler(userService, roleService, permissionService, userRoleService)
 
 	// Initialize middleware
 	authMiddleware := middleware.AuthMiddleware(authService)
@@ -98,6 +99,28 @@ func SetupRouter(cfg *config.Config, db *database.DB) *gin.Engine {
 			permissions.POST("", permissionHandler.CreatePermission)
 			permissions.PUT("/:id", permissionHandler.UpdatePermission)
 			permissions.DELETE("/:id", permissionHandler.DeletePermission)
+		}
+
+		// Admin-only routes
+		admin := v1.Group("/admin")
+		admin.Use(authMiddleware, rbacMiddleware.RequireRole("admin"))
+		{
+			// User management
+			admin.GET("/users", adminHandler.ListUsers)
+			admin.POST("/users", adminHandler.CreateUser)
+			admin.DELETE("/users/:id", adminHandler.DeleteUser)
+
+			// Role management
+			admin.GET("/roles", adminHandler.ListRoles)
+			admin.POST("/roles", adminHandler.CreateRole)
+			admin.DELETE("/roles/:id", adminHandler.DeleteRole)
+
+			// Permission management
+			admin.GET("/permissions", adminHandler.ListPermissions)
+
+			// User-role assignments
+			admin.GET("/user-roles", adminHandler.ListUserRoles)
+			admin.DELETE("/user-roles/:id", adminHandler.RemoveUserRole)
 		}
 	}
 

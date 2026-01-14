@@ -82,7 +82,7 @@ check_sudo() {
 install_package() {
     local package=$1
     local name=${2:-$package}
-    
+
     echo "Installing $name..."
     if dnf install -y "$package" &> /dev/null; then
         print_success "$name installed"
@@ -95,7 +95,7 @@ check_and_install() {
     local command=$1
     local package=$2
     local name=${3:-$package}
-    
+
     if check_command "$command"; then
         print_skip "$name already installed"
     else
@@ -201,7 +201,7 @@ print_header "Installing Go Development Stack"
 if check_command "go"; then
     CURRENT_VERSION=$(go version | awk '{print $3}')
     echo "Current Go version: $CURRENT_VERSION"
-    
+
     if [[ "$CURRENT_VERSION" == "go1.25"* ]]; then
         print_skip "Go 1.25 already installed"
     else
@@ -214,7 +214,7 @@ fi
 # Download and install Go 1.25 if not already installed or if older version
 if [[ ! $(go version 2>/dev/null) == *"go1.25"* ]]; then
     GO_VERSION="1.25"
-    
+
     # Detect architecture
     ARCH=$(uname -m)
     if [[ "$ARCH" == "x86_64" ]]; then
@@ -225,28 +225,28 @@ if [[ ! $(go version 2>/dev/null) == *"go1.25"* ]]; then
         print_error "Unsupported architecture: $ARCH"
         GO_ARCH="amd64"  # Default fallback
     fi
-    
+
     GO_TARBALL="go${GO_VERSION}.linux-${GO_ARCH}.tar.gz"
     GO_URL="https://golang.org/dl/${GO_TARBALL}"
-    
+
     echo "Downloading Go from $GO_URL..."
     if curl -fsSL "$GO_URL" -o "/tmp/$GO_TARBALL"; then
         echo "Extracting Go..."
-        
+
         # Remove old Go installation if it exists
         rm -rf /usr/local/go
-        
+
         tar -C /usr/local -xzf "/tmp/$GO_TARBALL"
         rm "/tmp/$GO_TARBALL"
-        
+
         # Update PATH
         if ! grep -q "/usr/local/go/bin" /etc/profile.d/venio.sh 2>/dev/null; then
             echo "export PATH=/usr/local/go/bin:\$PATH" | tee /etc/profile.d/venio.sh > /dev/null
         fi
-        
+
         # Source the new PATH
         export PATH=/usr/local/go/bin:$PATH
-        
+
         print_success "Go 1.25 installed"
         echo "  $(go version)"
     else
@@ -293,16 +293,16 @@ if [[ "$DISTRO" == "fedora" ]]; then
 else
     # For RHEL/CentOS, use NodeSource repository
     print_info "Setting up NodeSource repository..."
-    
+
     # Get Node major version (currently LTS is 22.x)
     NODE_MAJOR=22
-    
+
     if ! rpm --import https://rpm.nodesource.com/pubkey.gpg &> /dev/null; then
         print_error "Failed to import NodeSource GPG key"
     else
         print_success "NodeSource GPG key imported"
     fi
-    
+
     # Install NodeSource repository
     if curl -sL https://rpm.nodesource.com/setup_${NODE_MAJOR}.x | bash - &> /dev/null; then
         install_package "nodejs" "Node.js"
@@ -315,7 +315,7 @@ fi
 # npm global packages
 if check_command "npm"; then
     echo "Installing npm global packages..."
-    
+
     # snyk
     echo "Installing snyk..."
     if npm install -g snyk &> /dev/null; then
@@ -348,13 +348,13 @@ echo "Installing Docker..."
 if dnf config-manager --add-repo=https://download.docker.com/linux/fedora/docker-ce.repo &> /dev/null && \
    $PACKAGE_MANAGER install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin &> /dev/null; then
     print_success "Docker installed"
-    
+
     # Enable and start Docker daemon
     echo "Enabling Docker daemon..."
     systemctl enable docker
     systemctl start docker
     print_success "Docker daemon configured to start on boot"
-    
+
     # Add docker group
     if ! getent group docker > /dev/null; then
         echo "Creating docker group..."
@@ -363,7 +363,7 @@ if dnf config-manager --add-repo=https://download.docker.com/linux/fedora/docker
     else
         print_skip "docker group already exists"
     fi
-    
+
     # Add current user to docker group
     CURRENT_USER=${SUDO_USER:-$USER}
     if ! groups "$CURRENT_USER" | grep -q "\bdocker\b"; then

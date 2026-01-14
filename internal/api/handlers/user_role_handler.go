@@ -50,10 +50,10 @@ func (h *UserRoleHandler) AssignRoleToUser(c *gin.Context) {
 
 	var req models.AssignRoleRequest
 
-	if err := c.ShouldBindJSON(&req); err != nil {
+	if bindErr := c.ShouldBindJSON(&req); bindErr != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error":   "Invalid request",
-			"message": err.Error(),
+			"message": bindErr.Error(),
 		})
 		return
 	}

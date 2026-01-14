@@ -69,7 +69,7 @@ check_command() {
 install_brew_package() {
     local package=$1
     local name=${2:-$package}
-    
+
     if check_command "$package"; then
         print_skip "$name already installed"
     else
@@ -85,7 +85,7 @@ install_brew_package() {
 install_brew_cask() {
     local package=$1
     local name=${2:-$package}
-    
+
     if brew list --cask "$package" &> /dev/null 2>&1; then
         print_skip "$name already installed"
     else
@@ -161,7 +161,7 @@ echo "Installing Go 1.25..."
 if check_command "go"; then
     CURRENT_VERSION=$(go version | awk '{print $3}')
     echo "Current Go version: $CURRENT_VERSION"
-    
+
     if [[ "$CURRENT_VERSION" == "go1.25"* ]]; then
         print_skip "Go 1.25 already installed"
     else
@@ -221,7 +221,7 @@ fi
 # npm packages
 if check_command "npm"; then
     echo "Installing npm global packages..."
-    
+
     # snyk
     if npm list -g snyk &> /dev/null; then
         print_skip "snyk already installed globally"
@@ -310,7 +310,7 @@ fi
 
 if [[ "$SHELL_RC" != "unknown" ]]; then
     print_info "Configuration file: $SHELL_RC"
-    
+
     # Ensure Go bin directory is in PATH
     if grep -q "GOPATH/bin" "$SHELL_RC" 2>/dev/null || grep -q "go/bin" "$SHELL_RC" 2>/dev/null; then
         print_skip "GOPATH/bin already in PATH"

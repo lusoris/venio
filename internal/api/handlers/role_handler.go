@@ -105,10 +105,10 @@ func (h *RoleHandler) UpdateRole(c *gin.Context) {
 
 	var req models.UpdateRoleRequest
 
-	if err := c.ShouldBindJSON(&req); err != nil {
+	if bindErr := c.ShouldBindJSON(&req); bindErr != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error":   "Invalid request",
-			"message": err.Error(),
+			"message": bindErr.Error(),
 		})
 		return
 	}
@@ -172,10 +172,10 @@ func (h *RoleHandler) AssignPermissionToRole(c *gin.Context) {
 
 	var req models.AssignPermissionRequest
 
-	if err := c.ShouldBindJSON(&req); err != nil {
+	if bindErr := c.ShouldBindJSON(&req); bindErr != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error":   "Invalid request",
-			"message": err.Error(),
+			"message": bindErr.Error(),
 		})
 		return
 	}
