@@ -52,7 +52,7 @@ $wingetPath = Get-Command winget -ErrorAction SilentlyContinue
 
 if (-not $wingetPath) {
     Write-Warning-Custom "⚠️  winget not found. Installing App Installer..."
-    
+
     try {
         Add-AppxPackage -RegisterByFamilyName -MainPackage Microsoft.DesktopAppInstaller_8wekyb3d8bbwe
         Write-Success "✓ App Installer installed"
@@ -86,22 +86,22 @@ $failed = 0
 
 foreach ($package in $packages) {
     Write-Host "Checking $($package.name)..." -NoNewline
-    
+
     # Check if already installed
     $existingCommand = Get-Command $package.command -ErrorAction SilentlyContinue
-    
+
     if ($existingCommand) {
         Write-Success " ✓ (already installed)"
         $skipped++
         continue
     }
-    
+
     Write-Host ""
     Write-Host "  Installing $($package.name)..." -NoNewline
-    
+
     try {
         $output = & winget install $package.id -e --accept-source-agreements --accept-package-agreements 2>&1
-        
+
         if ($LASTEXITCODE -eq 0 -or $output -match "Successfully installed") {
             Write-Success " ✓"
             $installed++
@@ -144,10 +144,10 @@ $toolsFailed = 0
 
 foreach ($tool in $goTools) {
     Write-Host "Installing $($tool.name)..." -NoNewline
-    
+
     try {
         $output = & go install $tool.package 2>&1
-        
+
         if ($LASTEXITCODE -eq 0) {
             Write-Success " ✓"
             $toolsInstalled++
@@ -201,13 +201,13 @@ $unverified = 0
 
 foreach ($check in $checks) {
     Write-Host "Checking $($check.name)..." -NoNewline
-    
+
     # Need to reload PATH in current session for newly installed tools
     $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
-    
+
     try {
         $output = Invoke-Expression $check.command 2>&1
-        
+
         if ($LASTEXITCODE -eq 0) {
             Write-Success " ✓"
             Write-Info "  $output"

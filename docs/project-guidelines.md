@@ -196,7 +196,7 @@ venio/
 
 2. **Use Typed Structures:** Always use explicit types/interfaces. Avoid `any` type in TypeScript and bare interfaces in Go.
 
-3. **Error Handling:** 
+3. **Error Handling:**
    - Go: Always check and propagate errors with context
    - TypeScript: Use specific error types, provide meaningful error messages
 
@@ -229,7 +229,7 @@ import (
     "context"
     "fmt"
     "log"
-    
+
     "github.com/lusoris/venio/internal/models"
 )
 

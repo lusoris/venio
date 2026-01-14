@@ -422,7 +422,7 @@ $checks = @{
 
 foreach ($check in $checks.GetEnumerator()) {
   Write-Host "Checking $($check.Name)..." -NoNewline
-  
+
   try {
     $output = Invoke-Expression $check.Value 2>&1
     if ($LASTEXITCODE -eq 0) {
