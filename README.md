@@ -55,9 +55,13 @@ docker compose up -d
 - [x] Configuration System (Viper)
 - [x] Database Connection (PostgreSQL + pgx)
 - [x] Core Data Models (User, Role, Permission)
-- [ ] User Repository & CRUD operations
-- [ ] User Service (Business Logic)
-- [ ] Authentication Service (JWT)
+- [x] User Repository & CRUD operations
+- [x] User Service (Business Logic)
+- [x] Authentication Service (JWT)
+- [x] REST API Handlers & Middleware
+- [x] Database Migrations
+- [ ] Role & Permission Management
+- [ ] Unit Tests
 - [ ] Overseerr Integration (Movies/TV)
 - [ ] Lidarr Integration (Music)
 - [ ] Whisparr Integration (Adult)
