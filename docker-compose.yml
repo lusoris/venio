@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   venio:
     image: ghcr.io/lusoris/venio:latest
@@ -17,7 +15,7 @@ services:
       - venio
 
   postgres:
-    image: postgres:16-alpine
+    image: postgres:18.1-alpine
     container_name: venio-postgres
     restart: unless-stopped
     ports:
@@ -37,7 +35,7 @@ services:
       retries: 5
 
   redis:
-    image: redis:7-alpine
+    image: redis:8.4-alpine
     container_name: venio-redis
     restart: unless-stopped
     ports:

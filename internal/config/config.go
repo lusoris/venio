@@ -21,7 +21,7 @@ type Config struct {
 // AppConfig holds application-level settings
 type AppConfig struct {
 	Name    string
-	Version string
+	Version string // Format: YYYY.MM.PATCH (e.g., 2026.01.0) - CalVer with patch number
 	Env     string // development, staging, production
 	Debug   bool
 }
@@ -99,7 +99,7 @@ func Load() (*Config, error) {
 	cfg := &Config{
 		App: AppConfig{
 			Name:    "Venio",
-			Version: "0.1.0-dev",
+			Version: "2026.01.0",
 			Env:     viper.GetString("APP_ENV"),
 			Debug:   viper.GetBool("DEBUG"),
 		},
