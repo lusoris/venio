@@ -18,14 +18,27 @@ func SetupRouter(cfg *config.Config, db *database.DB) *gin.Engine {
 
 	// Initialize repositories
 	userRepo := repositories.NewPostgresUserRepository(db.Pool())
+	roleRepo := repositories.NewRoleRepository(db.Pool())
+	permissionRepo := repositories.NewPermissionRepository(db.Pool())
+	userRoleRepo := repositories.NewUserRoleRepository(db.Pool())
 
 	// Initialize services
 	userService := services.NewDefaultUserService(userRepo)
 	authService := services.NewDefaultAuthService(userService, cfg)
+	roleService := services.NewRoleService(roleRepo)
+	permissionService := services.NewPermissionService(permissionRepo)
+	userRoleService := services.NewUserRoleService(userRoleRepo)
 
 	// Initialize handlers
 	authHandler := handlers.NewAuthHandler(authService, userService)
 	userHandler := handlers.NewUserHandler(userService)
+	roleHandler := handlers.NewRoleHandler(roleService)
+	permissionHandler := handlers.NewPermissionHandler(permissionService)
+	userRoleHandler := handlers.NewUserRoleHandler(userRoleService)
+
+	// Initialize middleware
+	authMiddleware := middleware.AuthMiddleware(authService)
+	rbacMiddleware := middleware.NewRBACMiddleware(userRoleService)
 
 	// Health check endpoint
 	router.GET("/health", func(c *gin.Context) {
@@ -49,12 +62,42 @@ func SetupRouter(cfg *config.Config, db *database.DB) *gin.Engine {
 
 		// Protected user routes
 		users := v1.Group("/users")
-		users.Use(middleware.AuthMiddleware(authService))
+		users.Use(authMiddleware)
 		{
 			users.GET("", userHandler.ListUsers)
 			users.GET("/:id", userHandler.GetUser)
 			users.PUT("/:id", userHandler.UpdateUser)
 			users.DELETE("/:id", userHandler.DeleteUser)
+			// User-role management routes
+			users.GET("/:userId/roles", userRoleHandler.GetUserRoles)
+			users.POST("/:userId/roles", rbacMiddleware.RequireRole("admin"), userRoleHandler.AssignRoleToUser)
+			users.DELETE("/:userId/roles/:roleId", rbacMiddleware.RequireRole("admin"), userRoleHandler.RemoveRoleFromUser)
+		}
+
+		// Protected role routes
+		roles := v1.Group("/roles")
+		roles.Use(authMiddleware, rbacMiddleware.RequireRole("admin"))
+		{
+			roles.GET("", roleHandler.ListRoles)
+			roles.GET("/:id", roleHandler.GetRole)
+			roles.POST("", roleHandler.CreateRole)
+			roles.PUT("/:id", roleHandler.UpdateRole)
+			roles.DELETE("/:id", roleHandler.DeleteRole)
+			// Role-permission management routes
+			roles.GET("/:id/permissions", roleHandler.GetRolePermissions)
+			roles.POST("/:id/permissions", roleHandler.AssignPermissionToRole)
+			roles.DELETE("/:id/permissions/:permissionId", roleHandler.RemovePermissionFromRole)
+		}
+
+		// Protected permission routes
+		permissions := v1.Group("/permissions")
+		permissions.Use(authMiddleware, rbacMiddleware.RequireRole("admin"))
+		{
+			permissions.GET("", permissionHandler.ListPermissions)
+			permissions.GET("/:id", permissionHandler.GetPermission)
+			permissions.POST("", permissionHandler.CreatePermission)
+			permissions.PUT("/:id", permissionHandler.UpdatePermission)
+			permissions.DELETE("/:id", permissionHandler.DeletePermission)
 		}
 	}
 

@@ -122,3 +122,37 @@ type TokenClaims struct {
 	Roles    []string `json:"roles"`
 	jwt.RegisteredClaims
 }
+
+// CreateRoleRequest is the request body for creating a role
+type CreateRoleRequest struct {
+	Name        string `json:"name" binding:"required,min=3,max=50"`
+	Description string `json:"description" binding:"required,min=10,max=255"`
+}
+
+// UpdateRoleRequest is the request body for updating a role
+type UpdateRoleRequest struct {
+	Name        *string `json:"name,omitempty" binding:"omitempty,min=3,max=50"`
+	Description *string `json:"description,omitempty" binding:"omitempty,min=10,max=255"`
+}
+
+// CreatePermissionRequest is the request body for creating a permission
+type CreatePermissionRequest struct {
+	Name        string `json:"name" binding:"required,min=3,max=100"`
+	Description string `json:"description" binding:"required,min=10,max=255"`
+}
+
+// UpdatePermissionRequest is the request body for updating a permission
+type UpdatePermissionRequest struct {
+	Name        *string `json:"name,omitempty" binding:"omitempty,min=3,max=100"`
+	Description *string `json:"description,omitempty" binding:"omitempty,min=10,max=255"`
+}
+
+// AssignRoleRequest is the request body for assigning a role to a user
+type AssignRoleRequest struct {
+	RoleID int64 `json:"role_id" binding:"required"`
+}
+
+// AssignPermissionRequest is the request body for assigning a permission to a role
+type AssignPermissionRequest struct {
+	PermissionID int64 `json:"permission_id" binding:"required"`
+}
