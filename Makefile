@@ -1,4 +1,4 @@
-.PHONY: help dev run watch test test-coverage test-integration lint format build docker-build docker-push migrate-up migrate-down db-reset db-shell docker-up docker-down docker-logs docker-ps install-tools install setup clean
+.PHONY: help dev run watch test test-coverage test-integration lint format build docker-build docker-push migrate-up migrate-down db-reset db-shell seed-data test-api docker-up docker-down docker-logs docker-ps install-tools install setup clean
 
 # Default target
 help:
@@ -19,10 +19,13 @@ help:
 	@echo "  docker-up         - Start PostgreSQL and Redis"
 	@echo "  docker-down       - Stop all Docker services"
 	@echo "  docker-logs       - View Docker logs"
+	@echo "  docker-ps         - Show running containers"
 	@echo "  migrate-up        - Run database migrations"
 	@echo "  migrate-down      - Rollback database migrations"
 	@echo "  db-reset          - Reset database (down then up)"
 	@echo "  db-shell          - Open PostgreSQL shell"
+	@echo "  seed-data         - Seed database with test users and roles"
+	@echo "  test-api          - Run API tests with PowerShell"
 	@echo "  install-tools     - Install development tools"
 	@echo "  install           - Install tools and dependencies"
 	@echo "  setup             - Complete project setup"
@@ -87,6 +90,18 @@ db-reset: migrate-down migrate-up
 db-shell:
 	@echo "🐘 Opening PostgreSQL shell..."
 	docker exec -it venio-postgres psql -U venio -d venio
+
+# Seeding
+seed-data:
+	@echo "🌱 Seeding database with test users and roles..."
+	@go run cmd/seeder/main.go
+	@echo "✅ Seed data complete"
+
+# API Testing
+test-api:
+	@echo "🧪 Running API tests..."
+	@powershell -File scripts/test-api.ps1
+	@echo "✅ API tests complete"
 
 # Docker helpers
 docker-up:

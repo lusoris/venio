@@ -3,20 +3,40 @@ pre-commit:
   commands:
     format:
       glob: "*.go"
+      skip:
+        - merge
+        - rebase
       run: goimports -w {staged_files} && git add {staged_files}
 
     lint:
       glob: "*.go"
-      run: golangci-lint run --fix ./...
+      skip:
+        - merge
+        - rebase
+      run: golangci-lint run --fix {staged_files}
 
-    test:
+    security:
       glob: "*.go"
-      run: go test ./...
+      skip:
+        - merge
+        - rebase
+      run: go vet ./...
 
 pre-push:
   commands:
     test:
       run: go test -v ./...
-
+      
     lint:
       run: golangci-lint run ./...
+      
+    security-scan:
+      run: |
+        if command -v snyk &> /dev/null; then
+          echo "Running Snyk security scan..."
+          snyk test --severity-threshold=medium || echo "⚠ Security issues found, but continuing..."
+        else
+          echo "Snyk not installed. Install with: npm install -g snyk"
+        fi
+      fail: false
+
