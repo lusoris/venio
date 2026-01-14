@@ -25,7 +25,7 @@ func NewUserRoleHandler(userRoleService services.UserRoleService) *UserRoleHandl
 
 // GetUserRoles retrieves all roles for a user
 func (h *UserRoleHandler) GetUserRoles(c *gin.Context) {
-	userID, err := strconv.ParseInt(c.Param("userId"), 10, 64)
+	userID, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
 		return
@@ -42,7 +42,7 @@ func (h *UserRoleHandler) GetUserRoles(c *gin.Context) {
 
 // AssignRoleToUser assigns a role to a user
 func (h *UserRoleHandler) AssignRoleToUser(c *gin.Context) {
-	userID, err := strconv.ParseInt(c.Param("userId"), 10, 64)
+	userID, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
 		return
@@ -72,7 +72,7 @@ func (h *UserRoleHandler) AssignRoleToUser(c *gin.Context) {
 
 // RemoveRoleFromUser removes a role from a user
 func (h *UserRoleHandler) RemoveRoleFromUser(c *gin.Context) {
-	userID, err := strconv.ParseInt(c.Param("userId"), 10, 64)
+	userID, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
 		return

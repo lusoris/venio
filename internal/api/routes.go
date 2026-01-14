@@ -70,9 +70,9 @@ func SetupRouter(cfg *config.Config, db *database.DB) *gin.Engine {
 			users.PUT("/:id", userHandler.UpdateUser)
 			users.DELETE("/:id", userHandler.DeleteUser)
 			// User-role management routes
-			users.GET("/:userId/roles", userRoleHandler.GetUserRoles)
-			users.POST("/:userId/roles", rbacMiddleware.RequireRole("admin"), userRoleHandler.AssignRoleToUser)
-			users.DELETE("/:userId/roles/:roleId", rbacMiddleware.RequireRole("admin"), userRoleHandler.RemoveRoleFromUser)
+			users.GET("/:id/roles", userRoleHandler.GetUserRoles)
+			users.POST("/:id/roles", rbacMiddleware.RequireRole("admin"), userRoleHandler.AssignRoleToUser)
+			users.DELETE("/:id/roles/:roleId", rbacMiddleware.RequireRole("admin"), userRoleHandler.RemoveRoleFromUser)
 		}
 
 		// Protected role routes
