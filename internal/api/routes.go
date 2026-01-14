@@ -16,6 +16,18 @@ import (
 func SetupRouter(cfg *config.Config, db *database.DB) *gin.Engine {
 	router := gin.Default()
 
+	// Apply global security middleware
+	router.Use(middleware.SecurityHeaders())
+
+	// Apply CORS middleware
+	if cfg.App.Env == "development" {
+		router.Use(middleware.CORSDevelopment())
+	} else {
+		// In production, specify the frontend URL from config
+		// For now, allow localhost:3000 for testing
+		router.Use(middleware.CORS("http://localhost:3000"))
+	}
+
 	// Initialize repositories
 	userRepo := repositories.NewPostgresUserRepository(db.Pool())
 	roleRepo := repositories.NewRoleRepository(db.Pool())
@@ -41,6 +53,10 @@ func SetupRouter(cfg *config.Config, db *database.DB) *gin.Engine {
 	authMiddleware := middleware.AuthMiddleware(authService)
 	rbacMiddleware := middleware.NewRBACMiddleware(userRoleService)
 
+	// Initialize rate limiters
+	authRateLimiter := middleware.AuthRateLimiter()
+	generalRateLimiter := middleware.GeneralRateLimiter()
+
 	// Health check endpoint
 	router.GET("/health", func(c *gin.Context) {
 		c.JSON(200, gin.H{
@@ -52,9 +68,11 @@ func SetupRouter(cfg *config.Config, db *database.DB) *gin.Engine {
 
 	// API v1 routes
 	v1 := router.Group("/api/v1")
+	v1.Use(generalRateLimiter.Middleware())
 	{
-		// Public auth routes
+		// Public auth routes (with stricter rate limiting)
 		auth := v1.Group("/auth")
+		auth.Use(authRateLimiter.Middleware())
 		{
 			auth.POST("/register", authHandler.Register)
 			auth.POST("/login", authHandler.Login)
