@@ -65,7 +65,8 @@ Business logic organized by domain:
 ### 3. Database Layer (`internal/database`)
 
 - **Primary Database:** PostgreSQL 16+
-- **ORM:** sqlc (compile-time checked queries)
+- **Driver:** pgx v5 (native PostgreSQL driver)
+- **Connection Pool:** pgxpool (built-in pooling)
 - **Migrations:** golang-migrate
 
 **Schema Organization:**
@@ -76,6 +77,12 @@ Business logic organized by domain:
 - settings, profiles
 - analytics events
 ```
+
+**Database Pattern:**
+- Raw SQL queries with pgx for flexibility
+- Connection pooling with configurable limits
+- Proper error handling and logging
+- Repository pattern for data access
 
 ### 4. Workers (`cmd/worker`)
 

@@ -52,7 +52,12 @@ docker compose up -d
 
 ### MVP (Current Phase)
 - [x] Project Setup & Template
-- [ ] Core User Management
+- [x] Configuration System (Viper)
+- [x] Database Connection (PostgreSQL + pgx)
+- [x] Core Data Models (User, Role, Permission)
+- [ ] User Repository & CRUD operations
+- [ ] User Service (Business Logic)
+- [ ] Authentication Service (JWT)
 - [ ] Overseerr Integration (Movies/TV)
 - [ ] Lidarr Integration (Music)
 - [ ] Whisparr Integration (Adult)

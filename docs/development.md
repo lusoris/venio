@@ -66,50 +66,118 @@ Install them for the best experience:
 
 ## Running Locally
 
-### Option 1: Full Development Stack (Recommended)
+### Option 1: Services Only (Recommended for Development)
+
+```bash
+# Terminal 1: Start Docker services
+docker compose up postgres redis
+
+# Terminal 2: Run Venio locally
+go run cmd/venio/main.go
+```
+
+This is best for:
+- Faster iteration (no Docker rebuild)
+- Easier debugging with IDE
+- Hot reload with `air`
+
+Access:
+- Venio API: http://localhost:3690
+- PostgreSQL: localhost:5432 (in Docker)
+- Redis: localhost:6379 (in Docker)
+
+**Health Check:**
+```bash
+curl http://localhost:3690/health
+```
+
+### Option 2: With Hot Reload (air)
+
+```bash
+# Terminal 1: Start services
+docker compose up postgres redis
+
+# Terminal 2: Run with hot reload
+air
+```
+
+Benefits:
+- Auto-rebuild on file changes
+- Same environment as production
+- Faster development cycle
+
+### Option 3: Full Development Stack
 
 ```bash
 make dev
 ```
 
-This starts:
-- Venio backend (with hot reload)
-- PostgreSQL
-- Redis
-- Typesense
+This starts everything including Venio in Docker (less common for active development).
 
-Access:
-- Venio API: http://localhost:3690
-- PostgreSQL: localhost:5432
-- Redis: localhost:6379
-- Typesense: http://localhost:8108
+## Configuration
 
-### Option 2: Services Only (Run Venio Outside Docker)
+Configuration is loaded from `.env` file using Viper:
 
-```bash
-# Start only databases
-docker compose up postgres redis typesense
+```env
+# Server
+SERVER_HOST=0.0.0.0
+SERVER_PORT=3690
+APP_ENV=development
+DEBUG=true
 
-# In another terminal, run Venio locally
-go run cmd/venio/main.go
+# Database
+POSTGRES_HOST=localhost
+POSTGRES_PORT=5432
+POSTGRES_USER=venio
+POSTGRES_PASSWORD=<secure_password>
+POSTGRES_DB=venio
+
+# Redis
+REDIS_HOST=localhost
+REDIS_PORT=6379
+REDIS_PASSWORD=<secure_password>
+
+# JWT
+JWT_SECRET=<at-least-32-characters>
+JWT_EXPIRATION=24h
+JWT_REFRESH_EXPIRY_DAYS=7
 ```
 
-This is useful for:
-- Faster iteration (no Docker rebuild)
-- Easier debugging
-- IDE integration
+**Important:** JWT_SECRET must be at least 32 characters long for production.
 
-### Option 3: With Hot Reload (air)
+## Architecture
 
-```bash
-# Ensure air is installed
-go install github.com/cosmtrek/air@latest
+### Package Structure
 
-# Run with hot reload
-air
+```
+internal/
+├── api/          # HTTP handlers and routes
+├── services/     # Business logic
+├── database/     # Database connection and utilities
+├── models/       # Data structures
+├── config/       # Configuration management
+└── repositories/ # Data access layer (TBD)
+
+cmd/
+├── venio/        # Main application
+└── worker/       # Background worker
 ```
 
-Air watches for file changes and automatically rebuilds.
+### Database Access
+
+We use **pgx v5** with a connection pool for PostgreSQL:
+
+```go
+// Typical database operation
+db, err := database.Connect(ctx, &cfg.Database)
+rows, err := db.Query(ctx, "SELECT * FROM users WHERE id = $1", userID)
+```
+
+Pattern:
+- No ORM, direct SQL queries for control
+- Connection pooling with configurable limits
+- Proper error handling and context usage
+- Repository pattern for data access
 
 ## Development Workflow
 
