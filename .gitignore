@@ -10,6 +10,8 @@
 # Go
 vendor/
 *.out
+coverage
+coverage.out
 coverage.html
 *.test
 *.prof
