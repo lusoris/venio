@@ -434,10 +434,77 @@ go test ./internal/services/... -v -run TestUserService_Register_Success
 ## Example: Complete Test File
 
 See `internal/services/user_service_test.go` for a complete example with:
-- 14 test functions
-- MockUserRepository with all 8 methods
+- 52+ test functions covering all services
+- Complete mock implementations for all repository interfaces (9+ methods each)
 - Success, error, and edge case coverage
 - Proper mock setup and assertions
+
+## Email Verification Test Pattern
+
+### Service Tests (auth_service_test.go)
+
+```go
+// Test email token generation
+func TestAuthService_GenerateEmailVerificationToken_Success(t *testing.T) {
+    mockUserService := new(MockUserService)
+    cfg := &config.Config{
+        JWT: config.JWTConfig{Secret: "test-secret-32-chars-minimum-ok"},
+    }
+    authService := NewAuthService(mockUserService, cfg)
+    
+    // Generate token for user
+    token, err := authService.GenerateEmailVerificationToken(context.Background(), 1)
+    
+    assert.NoError(t, err)
+    assert.NotEmpty(t, token)
+    assert.Len(t, token, 64) // 32 bytes -> 64 hex chars
+}
+
+// Test email verification
+func TestAuthService_VerifyEmail_Success(t *testing.T) {
+    mockUserService := new(MockUserService)
+    cfg := &config.Config{JWT: config.JWTConfig{Secret: "test"}}
+    authService := NewAuthService(mockUserService, cfg)
+    
+    // Setup mock for GetByVerificationToken
+    token := "test-token-here"
+    mockUserService.On("GetByVerificationToken", mock.Anything, token).Return(
+        &models.User{ID: 1, EmailVerificationToken: &token},
+        nil,
+    )
+    mockUserService.On("Update", mock.Anything, mock.Anything).Return(nil)
+    
+    // Verify email with token
+    err := authService.VerifyEmail(context.Background(), token)
+    
+    assert.NoError(t, err)
+    mockUserService.AssertExpectations(t)
+}
+```
+
+### Mock Repository Update Pattern
+
+**CRITICAL**: When adding new repository methods, update ALL test mocks immediately:
+
+```go
+// internal/services/user_service_test.go
+func (m *MockUserRepository) GetByVerificationToken(ctx context.Context, token string) (*models.User, error) {
+    args := m.Called(ctx, token)
+    if args.Get(0) == nil {
+        return nil, args.Error(1)
+    }
+    return args.Get(0).(*models.User), args.Error(1)
+}
+
+// internal/api/handlers/auth_handler_test.go  
+func (m *MockUserServiceForHandler) GetByVerificationToken(ctx context.Context, token string) (*models.User, error) {
+    args := m.Called(ctx, token)
+    if args.Get(0) == nil {
+        return nil, args.Error(1)
+    }
+    return args.Get(0).(*models.User), args.Error(1)
+}
+```
 
 ---
 

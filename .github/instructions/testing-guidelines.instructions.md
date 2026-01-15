@@ -16,7 +16,8 @@ description: Testing and Service Management Guidelines
 
 ```powershell
 # Windows: Stop Go processes before running tests
-Get-Process | Where-Object { $_.ProcessName -eq "go" -or $_.Path -like "*venio*" } | Stop-Process -Force
+Get-Process -Name go -ErrorAction SilentlyContinue | Stop-Process -Force
+Get-Process | Where-Object { $_.Path -like "*venio*" } -ErrorAction SilentlyContinue | Stop-Process -Force
 
 # Then run tests
 go test ./... -v
@@ -40,8 +41,14 @@ Before starting the backend server, verify that port 3690 is available:
 Get-NetTCPConnection -LocalPort 3690 -ErrorAction SilentlyContinue
 
 # If port is in use, find and stop the process
-$processId = (Get-NetTCPConnection -LocalPort 3690).OwningProcess
-Stop-Process -Id $processId -Force
+try {
+    $tcpConnection = Get-NetTCPConnection -LocalPort 3690 -ErrorAction Stop
+    $processId = $tcpConnection.OwningProcess
+    Stop-Process -Id $processId -Force
+    Write-Host "Stopped process $processId using port 3690"
+} catch {
+    Write-Host "Port 3690 is available"
+}
 ```
 
 ```bash
@@ -146,20 +153,27 @@ When running tests or starting services, follow this workflow:
 
 ```powershell
 # Check for running Go processes
-Get-Process | Where-Object { $_.ProcessName -eq "go" } | Format-Table Id, ProcessName, StartTime
+Get-Process -Name go -ErrorAction SilentlyContinue | Format-Table Id, ProcessName, StartTime
 
 # Check for processes on port 3690
-Get-NetTCPConnection -LocalPort 3690 -ErrorAction SilentlyContinue | Format-Table
+try {
+    Get-NetTCPConnection -LocalPort 3690 -ErrorAction Stop | Format-Table LocalAddress, LocalPort, OwningProcess
+} catch {
+    Write-Host "Port 3690 is available (no processes found)"
+}
 ```
 
 ### Step 2: Stop Conflicting Processes
 
 ```powershell
 # Stop all Go processes
-Get-Process | Where-Object { $_.ProcessName -eq "go" -or $_.Path -like "*venio*" } | Stop-Process -Force
+Get-Process -Name go -ErrorAction SilentlyContinue | Stop-Process -Force
+
+# Stop any venio-related processes
+Get-Process | Where-Object { $_.Path -like "*venio*" } -ErrorAction SilentlyContinue | Stop-Process -Force
 
 # Verify they're stopped
-Get-Process | Where-Object { $_.ProcessName -eq "go" }  # Should return nothing
+Get-Process -Name go -ErrorAction SilentlyContinue  # Should return nothing
 ```
 
 ### Step 3: Verify Services
@@ -194,8 +208,14 @@ go run cmd/venio/main.go
 **Solution:**
 ```powershell
 # Find and stop the process
-$processId = (Get-NetTCPConnection -LocalPort 3690).OwningProcess
-Stop-Process -Id $processId -Force
+try {
+    $tcpConnection = Get-NetTCPConnection -LocalPort 3690 -ErrorAction Stop
+    $processId = $tcpConnection.OwningProcess
+    Stop-Process -Id $processId -Force
+    Write-Host "Stopped process using port 3690"
+} catch {
+    Write-Host "Port 3690 is available"
+}
 
 # Then start your service
 go run cmd/venio/main.go

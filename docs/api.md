@@ -96,6 +96,55 @@ Gets a new access token using a refresh token.
 }
 ```
 
+#### Verify Email
+Verifies a user's email address using a verification token (Phase 4 - In Development).
+
+**Endpoint:** `GET /auth/verify-email?token=<verification_token>`
+
+**Query Parameters:**
+- `token` (required): Email verification token sent to user's email
+
+**Response:** `200 OK`
+```json
+{
+  "message": "Email verified successfully",
+  "user": {
+    "id": 1,
+    "email": "user@example.com",
+    "is_email_verified": true,
+    "email_verified_at": "2026-01-15T10:30:00Z"
+  }
+}
+```
+
+**Error Responses:**
+- `400 Bad Request`: Token is invalid or expired
+- `409 Conflict`: Email already verified
+
+#### Resend Verification Email
+Requests a new verification email to be sent (Phase 4 - In Development).
+
+**Endpoint:** `POST /auth/send-verification-email`
+
+**Request Body:**
+```json
+{
+  "email": "user@example.com"
+}
+```
+
+**Response:** `200 OK`
+```json
+{
+  "message": "Verification email sent",
+  "email": "user@example.com"
+}
+```
+
+**Error Responses:**
+- `400 Bad Request`: Email not found
+- `409 Conflict`: Email already verified
+
 ### Users (Protected)
 
 All user endpoints require authentication.

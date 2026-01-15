@@ -1,5 +1,10 @@
 # Deployment Guide
 
+**Current Status:** Phase 3.1 Complete with Phase 4 Email Verification Backend Ready
+**Database:** PostgreSQL 18.1 (latest stable)
+**Redis:** 8.4 (latest stable)
+**Go Runtime:** 1.25 (latest stable)
+
 ## Docker Compose (Recommended for most users)
 
 ### Quick Start
@@ -12,13 +17,18 @@ curl -sL https://raw.githubusercontent.com/lusoris/venio/main/docker-compose.yml
 cat > .env << EOF
 POSTGRES_PASSWORD=your_secure_password
 REDIS_PASSWORD=your_redis_password
-TYPESENSE_API_KEY=your_typesense_key
 JWT_SECRET=your_jwt_secret_minimum_32_chars
-API_KEY=your_api_key
+# Phase 4: Email verification configuration
+EMAIL_PROVIDER=sendgrid  # or ses, smtp
+EMAIL_API_KEY=your_email_api_key
+EMAIL_FROM_ADDRESS=noreply@venio.example.com
 EOF
 
 # Start
 docker compose up -d
+
+# Run migrations (including email verification schema)
+docker compose exec venio go run cmd/venio/main.go migrate
 
 # Check logs
 docker compose logs -f venio
@@ -40,13 +50,41 @@ services:
       - "3690:3690"
     env_file:
       - .env
+    environment:
+      - GIN_MODE=release
+      - LOG_LEVEL=info
     depends_on:
       - postgres
       - redis
     networks:
       - venio
-    
-  # ... other services
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3690/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  postgres:
+    image: postgres:18.1-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: venio
+      POSTGRES_USER: venio
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - venio
+
+  redis:
+    image: redis:8.4-alpine
+    restart: unless-stopped
+    command: redis-server --requirepass ${REDIS_PASSWORD}
+    volumes:
+      - redis-data:/data
+    networks:
+      - venio
 
 volumes:
   postgres-data:
@@ -70,6 +108,20 @@ server {
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
     }
+    
+    # Rate limiting zones
+    limit_req_zone $binary_remote_addr zone=auth:10m rate=5r/m;
+    limit_req_zone $binary_remote_addr zone=api:10m rate=100r/m;
+    
+    location /api/v1/auth/ {
+        limit_req zone=auth burst=10 nodelay;
+        proxy_pass http://localhost:3690;
+    }
+    
+    location /api/v1/ {
+        limit_req zone=api burst=20 nodelay;
+        proxy_pass http://localhost:3690;
+    }
 }
 ```
 
@@ -84,7 +136,11 @@ sudo certbot --nginx -d venio.example.com
 
 ```bash
 helm repo add venio https://charts.venio.io
-helm install venio venio/venio
+helm install venio venio/venio \
+  --set postgres.password=your_password \
+  --set redis.password=your_password \
+  --set env.EMAIL_PROVIDER=sendgrid \
+  --set env.EMAIL_API_KEY=your_key
 ```
 
 ### Manual Deployment

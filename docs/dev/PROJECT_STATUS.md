@@ -2,16 +2,16 @@
 
 **Project:** Venio - Unified Media Management System
 **Date:** January 15, 2026
-**Status:** Phase 3 - Admin UI Complete
+**Status:** Phase 3.1 Complete → Phase 4 In Progress
 **Repository:** https://github.com/lusoris/venio
 
 ---
 
 ## Executive Summary
 
-Venio MVP Phase 1 complete with full authentication system. **Phase 2 RBAC backend** fully implemented with complete role and permission management. **Phase 3 Admin UI** now complete with full dashboard for managing users, roles, permissions, and assignments. All RBAC repositories, services, handlers, and middleware are functional. Backend uses latest stable versions: PostgreSQL 18.1 and Redis 8.4 with CalVer versioning (2026.01.0).
+Venio MVP Phase 1-2 complete with full authentication and RBAC. **Phase 3 Admin UI** complete. **Phase 3.1 Code Quality** complete with consistency fixes and type-safe middleware. **Phase 4 Email Verification** backend infrastructure complete (migrations, services, repositories). All APIs ready for handler and SMTP implementation. Backend uses latest stable: Go 1.25, PostgreSQL 18.1, Redis 8.4 with CalVer 2026.01.0.
 
-**Current Commit:** `76c5df9` on `develop` branch
+**Current Commit:** `89f90ac` on `develop` branch (70+ tests passing)
 
 ---
 
@@ -384,36 +384,43 @@ venio/
 
 ## Next Steps (Roadmap)
 
-### Phase 2: Roles & Permissions Management (Next Priority)
-- [ ] Create Role management endpoints (CRUD)
-- [ ] Create Permission management endpoints
-- [ ] Add role assignment endpoints
-- [ ] Add permission assignment to roles
-- [ ] Create admin UI for role/permission management
-- [ ] Add RBAC checks to existing endpoints
+### Phase 4: Email Verification System (Current - 40% Complete)
 
-### Phase 3: Service Integrations
-- [ ] Overseerr integration (Movies/TV)
-- [ ] Lidarr integration (Music)
-- [ ] Whisparr integration (Adult content)
-- [ ] Media server integration (Plex, Jellyfin)
+**Backend Infrastructure Complete** ✅
+- [x] Database migration with verification schema
+- [x] User model with email verification fields
+- [x] AuthService methods:
+  - `GenerateEmailVerificationToken()` - creates secure 32-byte token with 24h expiry
+  - `VerifyEmail()` - validates token and marks email verified
+  - `ResendVerificationEmail()` - generates new token for existing user
+- [x] UserService helper methods
+- [x] Repository layer (`GetByVerificationToken` implementation)
+- [x] Secure token generation using `crypto/rand`
+- [x] Test infrastructure updated (70+ tests passing)
 
-### Phase 4: Advanced Features
-- [ ] Request system (auto-approval, merging)
-- [ ] Community voting system
-- [ ] Content lifecycle management
-- [ ] Metadata enrichment from multiple sources
-- [ ] Parental controls
-- [ ] Watch parties & collections
+**Remaining Work** 🔄
+- [ ] HTTP handlers for `/api/v1/auth/verify-email` endpoints
+- [ ] Unit tests for email verification flows
+- [ ] SMTP configuration and email sending integration
+- [ ] Email templates (HTML/text)
+- [ ] Integration with registration flow (auto-generate token on signup)
 
-### Phase 5: Quality & Production
-- [ ] Complete test coverage
-- [ ] Performance optimization
-- [ ] Security audit
-- [ ] Kubernetes deployment
-- [ ] Monitoring & logging
-- [ ] CI/CD pipeline
-- [ ] Database backup strategy
+### Phase 5: Additional Features
+- [ ] Password reset functionality (similar pattern to email verification)
+- [ ] OAuth2/OIDC integration (Google, GitHub, Microsoft)
+- [ ] Two-factor authentication
+- [ ] Account lockout after failed login attempts
+- [ ] Audit logging for security events
+
+### Phase 6: Quality & Production
+- [ ] Full unit test coverage (80%+)
+- [ ] Integration tests for critical paths
+- [ ] Load testing and performance optimization
+- [ ] Kubernetes deployment manifests
+- [ ] Complete production deployment documentation
+- [ ] Security audit (penetration testing)
+- [ ] Monitoring and alerting (Prometheus, Grafana)
+- [ ] CI/CD pipeline (GitHub Actions)
 
 ---
 

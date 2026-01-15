@@ -8,7 +8,7 @@ This guide covers setting up a development environment for Venio.
 
 ### Required
 
-- **Go 1.23+** - [Download](https://go.dev/dl/)
+- **Go 1.25+** - [Download](https://go.dev/dl/)
 - **Docker 20+** - [Install](https://docs.docker.com/get-docker/)
 - **Docker Compose** - [Install](https://docs.docker.com/compose/install/)
 - **Git** - [Install](https://git-scm.com/downloads)
@@ -32,7 +32,7 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser -Force
 .\scripts\setup-windows-dev.ps1
 ```
 
-This will install Go, Docker, Git, Make, and all development tools automatically.
+This will install Go 1.25+, Docker, Git, Make, and all development tools automatically.
 
 See [Windows Setup Guide](windows-setup.md) for detailed instructions.
 
@@ -59,7 +59,7 @@ go install github.com/evilmartians/lefthook@latest
 lefthook install
 ```
 
-### 3. Environment Configuration
+#### 3. Environment Configuration
 
 ```bash
 cp .env.example .env
@@ -73,7 +73,7 @@ REDIS_PASSWORD=your_redis_password
 JWT_SECRET=your_jwt_secret_min_32_chars
 ```
 
-### 4. VSCode Setup
+#### 4. VSCode Setup
 
 If using VSCode, recommended extensions will be suggested automatically.
 
@@ -88,7 +88,10 @@ Install them for the best experience:
 
 ```bash
 # Terminal 1: Start Docker services
-docker compose up postgres redis
+docker compose up postgres redis -d
+
+# Wait for services to be ready
+sleep 3
 
 # Terminal 2: Run Venio locally
 go run cmd/venio/main.go
@@ -97,7 +100,7 @@ go run cmd/venio/main.go
 This is best for:
 - Faster iteration (no Docker rebuild)
 - Easier debugging with IDE
-- Hot reload with `air`
+- Hot reload with `air` (automatically enabled with Air)
 
 Access:
 - Venio API: http://localhost:3690

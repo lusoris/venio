@@ -1,7 +1,7 @@
 # Project Status & Roadmap
 
-**Last Updated:** 2026-01-14
-**Current Phase:** Phase 3 Complete → Phase 4 In Progress
+**Last Updated:** 2026-01-15
+**Current Phase:** Phase 3.1 Complete → Phase 4 In Progress
 **Version:** 2026.01.0 (CalVer)
 
 ## Current Status Summary
@@ -26,48 +26,58 @@
 - User listing and management
 - React 19 + Next.js 15 frontend
 
-**Phase 3.1: Unit Tests & Security** (100%)
-- Auth service tests (8 tests) ✅
-- Auth handler tests (6 tests) ✅
-- Security middleware tests (9 tests) ✅
-- CORS configuration with origin whitelisting ✅
-- Rate limiting (auth: 5/min, api: 100/min) ✅
-- Security headers (CSP, X-Frame-Options, HSTS, etc.) ✅
-- Dependency updates to latest stable ✅
+**Phase 3.1: Code Quality & Consistency** (100%)
+- Middleware consistency fixes ✅
+- Type-safe context helpers (middleware/context.go) ✅
+- Standardized error responses (middleware/responses.go) ✅
+- Docker version sync (Go 1.25 across all images) ✅
+- Cleaned up obsolete TODO comments ✅
+- All 70+ tests passing ✅
 
 ### In Progress 🔄
 
-**Phase 4: Service Integrations**
-- OAuth2/OIDC integration (0%)
-- Email verification system (0%)
-- Password reset functionality (0%)
-- Account lockout after failed attempts (0%)
+**Phase 4: Email Verification System** (40% - Backend Complete)
+- ✅ Database migration with verification schema
+- ✅ User model email verification fields
+- ✅ AuthService methods (GenerateToken, VerifyEmail, ResendEmail)
+- ✅ UserService helper methods (GetByID, Update, GetByVerificationToken)
+- ✅ Repository layer (GetByVerificationToken implementation)
+- ✅ Secure token generation (crypto/rand)
+- ✅ Test infrastructure updated (70+ tests passing)
+- 🔄 HTTP handlers (/api/v1/auth/verify-email endpoints)
+- 🔄 Unit tests for email verification flows
+- ⏳ SMTP integration for email sending
 
 ### Pending ⏳
 
-**Phase 5: Quality & Production**
+**Phase 5: Additional Service Integrations**
+- OAuth2/OIDC integration
+- Password reset functionality (similar to email verification)
+- Account lockout after failed attempts
+- Two-factor authentication
+
+**Phase 6: Quality & Production**
 - Full unit test coverage (80%+)
 - Integration tests for critical paths
 - Load testing and performance optimization
 - Docker production image optimization
-- Documentation updates for production deployment
+- Complete documentation for production deployment
 - Security audit (penetration testing)
-- API rate limiting refinement
-- Caching layer optimization
 
 ## Test Coverage
 
 | Component | Type | Count | Status |
 |-----------|------|-------|--------|
-| Auth Service | Unit | 8 | ✅ Pass |
-| Auth Handler | Unit | 6 | ✅ Pass |
-| Security Middleware | Unit | 9 | ✅ Pass |
-| User Service | Unit | 0 | ⏳ Pending |
-| Role Service | Unit | 0 | ⏳ Pending |
-| User Handler | Unit | 0 | ⏳ Pending |
-| Role Handler | Unit | 0 | ⏳ Pending |
+| Auth Service | Unit | 7 | ✅ Pass |
+| Auth Handler | Unit | 5 | ✅ Pass |
+| Security Middleware | Unit | 8 | ✅ Pass |
+| User Service | Unit | 20 | ✅ Pass |
+| Role Service | Unit | 10 | ✅ Pass |
+| Permission Service | Unit | 7 | ✅ Pass |
+| User-Role Service | Unit | 8 | ✅ Pass |
+| Rate Limiter | Unit | 4 | ✅ Pass |
 
-**Total:** 23 tests, 100% passing
+**Total:** 70+ tests, 100% passing
 
 ## Features Implemented
 
