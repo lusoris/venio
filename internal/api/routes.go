@@ -3,18 +3,30 @@ package api
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 
+	_ "github.com/lusoris/venio/docs/swagger" // Import generated docs
 	"github.com/lusoris/venio/internal/api/handlers"
 	"github.com/lusoris/venio/internal/api/middleware"
 	"github.com/lusoris/venio/internal/config"
 	"github.com/lusoris/venio/internal/database"
+	"github.com/lusoris/venio/internal/logger"
+	redisClient "github.com/lusoris/venio/internal/redis"
 	"github.com/lusoris/venio/internal/repositories"
 	"github.com/lusoris/venio/internal/services"
 )
 
 // SetupRouter initializes the Gin router with all routes
-func SetupRouter(cfg *config.Config, db *database.DB) *gin.Engine {
+func SetupRouter(cfg *config.Config, db *database.DB, redis *redisClient.Client, log *logger.Logger) *gin.Engine {
 	router := gin.Default()
+
+	// Apply structured logging middleware
+	router.Use(middleware.LoggingMiddleware(log))
+
+	// Apply Prometheus metrics middleware
+	router.Use(middleware.PrometheusMiddleware())
 
 	// Apply global security middleware
 	router.Use(middleware.SecurityHeaders())
@@ -36,10 +48,10 @@ func SetupRouter(cfg *config.Config, db *database.DB) *gin.Engine {
 
 	// Initialize services
 	userService := services.NewDefaultUserService(userRepo)
-	authService := services.NewDefaultAuthService(userService, cfg)
+	userRoleService := services.NewUserRoleService(userRoleRepo)
+	authService := services.NewDefaultAuthService(userService, userRoleService, cfg)
 	roleService := services.NewRoleService(roleRepo)
 	permissionService := services.NewPermissionService(permissionRepo)
-	userRoleService := services.NewUserRoleService(userRoleRepo)
 
 	// Initialize handlers
 	authHandler := handlers.NewAuthHandler(authService, userService)
@@ -48,23 +60,30 @@ func SetupRouter(cfg *config.Config, db *database.DB) *gin.Engine {
 	permissionHandler := handlers.NewPermissionHandler(permissionService)
 	userRoleHandler := handlers.NewUserRoleHandler(userRoleService)
 	adminHandler := handlers.NewAdminHandler(userService, roleService, permissionService, userRoleService)
+	healthHandler := handlers.NewHealthHandler(db.Pool(), redis.Client, cfg.App.Version, cfg.App.Env)
 
 	// Initialize middleware
 	authMiddleware := middleware.AuthMiddleware(authService)
 	rbacMiddleware := middleware.NewRBACMiddleware(userRoleService)
 
-	// Initialize rate limiters
-	authRateLimiter := middleware.AuthRateLimiter()
-	generalRateLimiter := middleware.GeneralRateLimiter()
+	// Initialize Redis-based rate limiters (distributed, production-ready)
+	authRateLimiter := middleware.RedisAuthRateLimiter(redis.Client)
+	generalRateLimiter := middleware.RedisGeneralRateLimiter(redis.Client)
 
-	// Health check endpoint
-	router.GET("/health", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"app":     cfg.App.Name,
-			"status":  "ok",
-			"version": cfg.App.Version,
-		})
-	})
+	// Metrics endpoint (Prometheus)
+	router.GET("/metrics", gin.WrapH(promhttp.Handler()))
+
+	// Health check endpoints (Kubernetes probes)
+	health := router.Group("/health")
+	{
+		health.GET("/live", healthHandler.Liveness)
+		health.GET("/ready", healthHandler.Readiness)
+	}
+
+	// API documentation (Swagger UI) - Only in development
+	if cfg.App.Env != "production" {
+		router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	}
 
 	// API v1 routes
 	v1 := router.Group("/api/v1")

@@ -45,6 +45,11 @@ type RedisConfig struct {
 	DB       int
 }
 
+// Address returns the Redis connection address
+func (c RedisConfig) Address() string {
+	return fmt.Sprintf("%s:%d", c.Host, c.Port)
+}
+
 // JWTConfig holds JWT configuration
 type JWTConfig struct {
 	Secret            string

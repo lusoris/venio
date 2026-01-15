@@ -25,14 +25,19 @@ func main() {
 	log.Println("🔧 Starting Venio Worker...")
 	log.Printf("Version: %s", version)
 
-	// TODO: Initialize configuration
-	// TODO: Initialize database connection
-	// TODO: Initialize job queue (asynq)
-	// TODO: Register job handlers
-	// TODO: Start worker
+	// Worker is currently a stub and not implemented
+	// Future implementation will use Asynq for background job processing:
+	// - Email notifications
+	// - Media processing
+	// - Database cleanup tasks
+	// - Integration with external services (Arr, Overseerr)
+	//
+	// For now, all operations run synchronously in the main server.
+	// See: https://github.com/lusoris/venio/issues/[TBD] for roadmap
 
-	log.Println("✅ Venio Worker running")
+	log.Println("⚠️  Worker stub - not yet implemented")
+	log.Println("    Background tasks currently run in main server")
 
-	// Keep running
-	select {}
+	// Exit instead of hanging
+	os.Exit(0)
 }

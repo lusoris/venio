@@ -71,8 +71,42 @@ func (m *MockUserService) DeleteUser(ctx context.Context, id int64) error {
 	return args.Error(0)
 }
 
+// MockUserRoleService is a mock implementation of UserRoleService for testing
+type MockUserRoleService struct {
+	mock.Mock
+}
+
+func (m *MockUserRoleService) GetUserRoles(ctx context.Context, userID int64) ([]string, error) {
+	args := m.Called(ctx, userID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]string), args.Error(1)
+}
+
+func (m *MockUserRoleService) HasRole(ctx context.Context, userID int64, roleName string) (bool, error) {
+	args := m.Called(ctx, userID, roleName)
+	return args.Get(0).(bool), args.Error(1)
+}
+
+func (m *MockUserRoleService) HasPermission(ctx context.Context, userID int64, permissionName string) (bool, error) {
+	args := m.Called(ctx, userID, permissionName)
+	return args.Get(0).(bool), args.Error(1)
+}
+
+func (m *MockUserRoleService) AssignRole(ctx context.Context, userID, roleID int64) error {
+	args := m.Called(ctx, userID, roleID)
+	return args.Error(0)
+}
+
+func (m *MockUserRoleService) RemoveRole(ctx context.Context, userID, roleID int64) error {
+	args := m.Called(ctx, userID, roleID)
+	return args.Error(0)
+}
+
 func TestLogin_Success(t *testing.T) {
 	mockUserService := new(MockUserService)
+	mockUserRoleService := new(MockUserRoleService)
 	cfg := &config.Config{
 		JWT: config.JWTConfig{
 			Secret:         "test-secret-must-be-at-least-32-characters-long-ok",
@@ -92,9 +126,10 @@ func TestLogin_Success(t *testing.T) {
 	}
 
 	mockUserService.On("GetUserByEmail", mock.Anything, "test@example.com").Return(testUser, nil)
+	mockUserRoleService.On("GetUserRoles", mock.Anything, int64(1)).Return([]string{"user"}, nil)
 
-	authService := NewDefaultAuthService(mockUserService, cfg)
-	accessToken, refreshToken, err := authService.Login("test@example.com", password)
+	authService := NewDefaultAuthService(mockUserService, mockUserRoleService, cfg)
+	accessToken, refreshToken, err := authService.Login(context.Background(), "test@example.com", password)
 
 	assert.NoError(t, err)
 	assert.NotEmpty(t, accessToken)
@@ -104,6 +139,7 @@ func TestLogin_Success(t *testing.T) {
 
 func TestLogin_InvalidCredentials(t *testing.T) {
 	mockUserService := new(MockUserService)
+	mockUserRoleService := new(MockUserRoleService)
 	cfg := &config.Config{
 		JWT: config.JWTConfig{
 			Secret:         "test-secret-must-be-at-least-32-characters-long-ok",
@@ -123,9 +159,10 @@ func TestLogin_InvalidCredentials(t *testing.T) {
 	}
 
 	mockUserService.On("GetUserByEmail", mock.Anything, "test@example.com").Return(testUser, nil)
+	mockUserRoleService.On("GetUserRoles", mock.Anything, int64(1)).Return([]string{"user"}, nil)
 
-	authService := NewDefaultAuthService(mockUserService, cfg)
-	_, _, err := authService.Login("test@example.com", "wrongpassword")
+	authService := NewDefaultAuthService(mockUserService, mockUserRoleService, cfg)
+	_, _, err := authService.Login(context.Background(), "test@example.com", "wrongpassword")
 
 	assert.Error(t, err)
 	assert.Equal(t, "invalid credentials", err.Error())
@@ -133,6 +170,7 @@ func TestLogin_InvalidCredentials(t *testing.T) {
 
 func TestLogin_InactiveUser(t *testing.T) {
 	mockUserService := new(MockUserService)
+	mockUserRoleService := new(MockUserRoleService)
 	cfg := &config.Config{
 		JWT: config.JWTConfig{
 			Secret:         "test-secret-must-be-at-least-32-characters-long-ok",
@@ -152,9 +190,10 @@ func TestLogin_InactiveUser(t *testing.T) {
 	}
 
 	mockUserService.On("GetUserByEmail", mock.Anything, "test@example.com").Return(testUser, nil)
+	mockUserRoleService.On("GetUserRoles", mock.Anything, int64(1)).Return([]string{"user"}, nil)
 
-	authService := NewDefaultAuthService(mockUserService, cfg)
-	_, _, err := authService.Login("test@example.com", password)
+	authService := NewDefaultAuthService(mockUserService, mockUserRoleService, cfg)
+	_, _, err := authService.Login(context.Background(), "test@example.com", password)
 
 	assert.Error(t, err)
 	assert.Equal(t, "user account is inactive", err.Error())
@@ -162,6 +201,7 @@ func TestLogin_InactiveUser(t *testing.T) {
 
 func TestLogin_UserNotFound(t *testing.T) {
 	mockUserService := new(MockUserService)
+	mockUserRoleService := new(MockUserRoleService)
 	cfg := &config.Config{
 		JWT: config.JWTConfig{
 			Secret:         "test-secret-must-be-at-least-32-characters-long-ok",
@@ -172,14 +212,15 @@ func TestLogin_UserNotFound(t *testing.T) {
 	mockUserService.On("GetUserByEmail", mock.Anything, "nonexistent@example.com").
 		Return(nil, assert.AnError)
 
-	authService := NewDefaultAuthService(mockUserService, cfg)
-	_, _, err := authService.Login("nonexistent@example.com", "password")
+	authService := NewDefaultAuthService(mockUserService, mockUserRoleService, cfg)
+	_, _, err := authService.Login(context.Background(), "nonexistent@example.com", "password")
 
 	assert.Error(t, err)
 }
 
 func TestValidateToken_Success(t *testing.T) {
 	mockUserService := new(MockUserService)
+	mockUserRoleService := new(MockUserRoleService)
 	cfg := &config.Config{
 		JWT: config.JWTConfig{
 			Secret:         "test-secret-must-be-at-least-32-characters-long-ok",
@@ -199,9 +240,10 @@ func TestValidateToken_Success(t *testing.T) {
 	}
 
 	mockUserService.On("GetUserByEmail", mock.Anything, "test@example.com").Return(testUser, nil)
+	mockUserRoleService.On("GetUserRoles", mock.Anything, int64(1)).Return([]string{"user"}, nil)
 
-	authService := NewDefaultAuthService(mockUserService, cfg)
-	accessToken, _, _ := authService.Login("test@example.com", password)
+	authService := NewDefaultAuthService(mockUserService, mockUserRoleService, cfg)
+	accessToken, _, _ := authService.Login(context.Background(), "test@example.com", password)
 
 	claims, err := authService.ValidateToken(accessToken)
 
@@ -213,6 +255,7 @@ func TestValidateToken_Success(t *testing.T) {
 
 func TestValidateToken_InvalidToken(t *testing.T) {
 	mockUserService := new(MockUserService)
+	mockUserRoleService := new(MockUserRoleService)
 	cfg := &config.Config{
 		JWT: config.JWTConfig{
 			Secret:         "test-secret-must-be-at-least-32-characters-long-ok",
@@ -220,7 +263,7 @@ func TestValidateToken_InvalidToken(t *testing.T) {
 		},
 	}
 
-	authService := NewDefaultAuthService(mockUserService, cfg)
+	authService := NewDefaultAuthService(mockUserService, mockUserRoleService, cfg)
 	_, err := authService.ValidateToken("invalid.token.string")
 
 	assert.Error(t, err)
@@ -228,6 +271,7 @@ func TestValidateToken_InvalidToken(t *testing.T) {
 
 func TestTokenExpiration(t *testing.T) {
 	mockUserService := new(MockUserService)
+	mockUserRoleService := new(MockUserRoleService)
 	cfg := &config.Config{
 		JWT: config.JWTConfig{
 			Secret:         "test-secret-must-be-at-least-32-characters-long-ok",
@@ -247,9 +291,10 @@ func TestTokenExpiration(t *testing.T) {
 	}
 
 	mockUserService.On("GetUserByEmail", mock.Anything, "test@example.com").Return(testUser, nil)
+	mockUserRoleService.On("GetUserRoles", mock.Anything, int64(1)).Return([]string{"user"}, nil)
 
-	authService := NewDefaultAuthService(mockUserService, cfg)
-	accessToken, _, _ := authService.Login("test@example.com", password)
+	authService := NewDefaultAuthService(mockUserService, mockUserRoleService, cfg)
+	accessToken, _, _ := authService.Login(context.Background(), "test@example.com", password)
 
 	claims, err := authService.ValidateToken(accessToken)
 	assert.NoError(t, err)

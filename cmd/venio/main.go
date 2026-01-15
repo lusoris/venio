@@ -19,6 +19,8 @@ import (
 	"github.com/lusoris/venio/internal/api"
 	"github.com/lusoris/venio/internal/config"
 	"github.com/lusoris/venio/internal/database"
+	"github.com/lusoris/venio/internal/logger"
+	redisClient "github.com/lusoris/venio/internal/redis"
 )
 
 const version = "0.1.0-dev"
@@ -39,6 +41,10 @@ func main() {
 	}
 	cfg.LogConfig()
 
+	// Initialize structured logger
+	appLogger := logger.New(&cfg.App)
+	appLogger.Info("Starting Venio Server", "version", version, "env", cfg.App.Env)
+
 	// Create context with timeout
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -54,8 +60,19 @@ func main() {
 		}
 	}()
 
+	// Initialize Redis
+	redis, err := redisClient.Connect(ctx, &cfg.Redis)
+	if err != nil {
+		log.Fatalf("Failed to connect to Redis: %v", err)
+	}
+	defer func() {
+		if err := redis.Close(); err != nil {
+			log.Printf("Error closing Redis: %v", err)
+		}
+	}()
+
 	// Setup router with all routes
-	router := api.SetupRouter(cfg, db)
+	router := api.SetupRouter(cfg, db, redis, appLogger)
 
 	// Start server
 	addr := fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.Port)

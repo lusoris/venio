@@ -10,7 +10,6 @@ services:
     depends_on:
       - postgres
       - redis
-      - typesense
     networks:
       - venio
 
@@ -51,27 +50,68 @@ services:
       timeout: 5s
       retries: 5
 
-  typesense:
-    image: typesense/typesense:29.0
-    container_name: venio-typesense
+  # Observability Stack
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: venio-prometheus
     restart: unless-stopped
-    environment:
-      TYPESENSE_API_KEY: ${TYPESENSE_API_KEY}
-      TYPESENSE_DATA_DIR: /data
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+      - '--web.enable-lifecycle'
+    ports:
+      - "9090:9090"
     volumes:
-      - typesense-data:/data
+      - ./deployments/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./deployments/prometheus/alerts.yml:/etc/prometheus/alerts.yml
+      - prometheus-data:/prometheus
+    depends_on:
+      - venio
     networks:
       - venio
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8108/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: venio-grafana
+    restart: unless-stopped
+    ports:
+      - "3001:3000"  # Use 3001 to avoid conflict with Next.js
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_USER:-admin}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - ./deployments/grafana/provisioning:/etc/grafana/provisioning
+      - ./deployments/grafana/dashboards:/var/lib/grafana/dashboards
+      - grafana-data:/var/lib/grafana
+    depends_on:
+      - prometheus
+    networks:
+      - venio
+
+  alertmanager:
+    image: prom/alertmanager:latest
+    container_name: venio-alertmanager
+    restart: unless-stopped
+    command:
+      - '--config.file=/etc/alertmanager/config.yml'
+      - '--storage.path=/alertmanager'
+    ports:
+      - "9093:9093"
+    volumes:
+      - ./deployments/alertmanager/config.yml:/etc/alertmanager/config.yml
+      - alertmanager-data:/alertmanager
+    networks:
+      - venio
 
 volumes:
   postgres-data:
   redis-data:
-  typesense-data:
+  prometheus-data:
+  grafana-data:
+  alertmanager-data:
 
 networks:
   venio:

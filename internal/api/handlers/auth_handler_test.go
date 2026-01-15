@@ -20,8 +20,8 @@ type MockAuthServiceForHandler struct {
 	mock.Mock
 }
 
-func (m *MockAuthServiceForHandler) Login(email, password string) (string, string, error) {
-	args := m.Called(email, password)
+func (m *MockAuthServiceForHandler) Login(ctx context.Context, email, password string) (string, string, error) {
+	args := m.Called(ctx, email, password)
 	return args.String(0), args.String(1), args.Error(2)
 }
 
@@ -33,8 +33,8 @@ func (m *MockAuthServiceForHandler) ValidateToken(token string) (*models.TokenCl
 	return args.Get(0).(*models.TokenClaims), args.Error(1)
 }
 
-func (m *MockAuthServiceForHandler) RefreshToken(token string) (string, error) {
-	args := m.Called(token)
+func (m *MockAuthServiceForHandler) RefreshToken(ctx context.Context, token string) (string, error) {
+	args := m.Called(ctx, token)
 	return args.String(0), args.Error(1)
 }
 
@@ -184,7 +184,7 @@ func TestAuthHandler_Login_Success(t *testing.T) {
 	body, _ := json.Marshal(requestBody)
 
 	// Mock both calls
-	mockAuthService.On("Login", "user@example.com", "password123").
+	mockAuthService.On("Login", mock.Anything, "user@example.com", "password123").
 		Return("access.token.here", "refresh.token.here", nil)
 
 	mockUserService.On("GetUserByEmail", mock.Anything, "user@example.com").Return(&models.User{
@@ -224,7 +224,7 @@ func TestAuthHandler_Login_InvalidCredentials(t *testing.T) {
 
 	body, _ := json.Marshal(requestBody)
 
-	mockAuthService.On("Login", "user@example.com", "wrongpassword").
+	mockAuthService.On("Login", mock.Anything, "user@example.com", "wrongpassword").
 		Return("", "", assert.AnError)
 
 	req := httptest.NewRequest(http.MethodPost, "/login", bytes.NewBuffer(body))
@@ -251,7 +251,7 @@ func TestAuthHandler_RefreshToken_Success(t *testing.T) {
 
 	body, _ := json.Marshal(requestBody)
 
-	mockAuthService.On("RefreshToken", "refresh.token.here").
+	mockAuthService.On("RefreshToken", mock.Anything, "refresh.token.here").
 		Return("new.access.token", nil)
 
 	req := httptest.NewRequest(http.MethodPost, "/refresh", bytes.NewBuffer(body))

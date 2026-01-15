@@ -10,6 +10,24 @@ import (
 	"github.com/lusoris/venio/internal/services"
 )
 
+// ErrorResponse represents an error response
+type ErrorResponse struct {
+	Error   string `json:"error" example:"Bad Request"`
+	Message string `json:"message" example:"Invalid input data"`
+}
+
+// LoginResponse represents a successful login response
+type LoginResponse struct {
+	AccessToken  string       `json:"access_token" example:"eyJhbGciOiJIUzI1NiIs..."`
+	RefreshToken string       `json:"refresh_token" example:"eyJhbGciOiJIUzI1NiIs..."`
+	User         *models.User `json:"user"`
+}
+
+// RefreshTokenRequest represents a token refresh request
+type RefreshTokenRequest struct {
+	RefreshToken string `json:"refresh_token" binding:"required" example:"eyJhbGciOiJIUzI1NiIs..."`
+}
+
 // AuthHandler handles authentication-related HTTP requests
 type AuthHandler struct {
 	authService services.AuthService
@@ -41,16 +59,20 @@ func (h *AuthHandler) Register(c *gin.Context) {
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, ErrorResponse{
 			Error:   "Invalid request",
-			Message: err.Error(),
+			Message: "Please check your input and try again",
 		})
 		return
 	}
 
 	user, err := h.userService.Register(c.Request.Context(), &req)
 	if err != nil {
+		// Log detailed error server-side
+		c.Request.Context().Value("logger") // TODO: Add proper logger
+
+		// Return generic message to client
 		c.JSON(http.StatusBadRequest, ErrorResponse{
 			Error:   "Registration failed",
-			Message: err.Error(),
+			Message: "Unable to create account. Email may already be registered.",
 		})
 		return
 	}
@@ -78,16 +100,16 @@ func (h *AuthHandler) Login(c *gin.Context) {
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, ErrorResponse{
 			Error:   "Invalid request",
-			Message: err.Error(),
+			Message: "Please provide valid email and password",
 		})
 		return
 	}
 
-	accessToken, refreshToken, err := h.authService.Login(req.Email, req.Password)
+	accessToken, refreshToken, err := h.authService.Login(c.Request.Context(), req.Email, req.Password)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, ErrorResponse{
 			Error:   "Authentication failed",
-			Message: err.Error(),
+			Message: "Invalid email or password",
 		})
 		return
 	}
@@ -95,9 +117,13 @@ func (h *AuthHandler) Login(c *gin.Context) {
 	// Get user info
 	user, err := h.userService.GetUserByEmail(c.Request.Context(), req.Email)
 	if err != nil {
+		// Log detailed error server-side
+		// TODO: Use logger from context
+
+		// Generic message to client
 		c.JSON(http.StatusInternalServerError, ErrorResponse{
-			Error:   "Failed to get user info",
-			Message: err.Error(),
+			Error:   "Authentication failed",
+			Message: "Unable to process login request",
 		})
 		return
 	}
@@ -129,16 +155,16 @@ func (h *AuthHandler) RefreshToken(c *gin.Context) {
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, ErrorResponse{
 			Error:   "Invalid request",
-			Message: err.Error(),
+			Message: "Invalid refresh token format",
 		})
 		return
 	}
 
-	accessToken, err := h.authService.RefreshToken(req.RefreshToken)
+	accessToken, err := h.authService.RefreshToken(c.Request.Context(), req.RefreshToken)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, ErrorResponse{
 			Error:   "Token refresh failed",
-			Message: err.Error(),
+			Message: "Refresh token expired or invalid. Please login again.",
 		})
 		return
 	}
@@ -148,18 +174,7 @@ func (h *AuthHandler) RefreshToken(c *gin.Context) {
 	})
 }
 
-// ErrorResponse represents an error response
-type ErrorResponse struct {
-	Error   string `json:"error"`
-	Message string `json:"message"`
-}
-
-// RefreshTokenRequest represents a token refresh request
-type RefreshTokenRequest struct {
-	RefreshToken string `json:"refresh_token" binding:"required"`
-}
-
 // RefreshTokenResponse represents a token refresh response
 type RefreshTokenResponse struct {
-	AccessToken string `json:"access_token"`
+	AccessToken string `json:"access_token" example:"eyJhbGciOiJIUzI1NiIs..."`
 }

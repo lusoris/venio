@@ -1,0 +1,96 @@
+global:
+  resolve_timeout: 5m
+  # SMTP configuration (configure for production)
+  # smtp_smarthost: 'smtp.gmail.com:587'
+  # smtp_from: 'alerts@venio.dev'
+  # smtp_auth_username: 'alerts@venio.dev'
+  # smtp_auth_password: 'your-smtp-password'
+
+# The root route with all parameters, which are inherited by the child routes
+route:
+  receiver: 'default'
+  group_by: ['alertname', 'cluster', 'service']
+  group_wait: 10s
+  group_interval: 10s
+  repeat_interval: 12h
+  routes:
+    # Critical alerts go to multiple channels
+    - match:
+        severity: critical
+      receiver: 'critical'
+      continue: true
+
+    # Warning alerts
+    - match:
+        severity: warning
+      receiver: 'warning'
+      continue: true
+
+    # Info alerts
+    - match:
+        severity: info
+      receiver: 'info'
+
+receivers:
+  # Default receiver (logs only)
+  - name: 'default'
+    webhook_configs:
+      - url: 'http://localhost:9093/webhook'
+        send_resolved: true
+
+  # Critical alerts
+  - name: 'critical'
+    # Email configuration (uncomment and configure for production)
+    # email_configs:
+    #   - to: 'ops-team@venio.dev'
+    #     headers:
+    #       Subject: '[CRITICAL] Venio Alert: {{ .GroupLabels.alertname }}'
+
+    # Slack webhook (configure for production)
+    # slack_configs:
+    #   - api_url: 'https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK'
+    #     channel: '#venio-alerts'
+    #     title: '[CRITICAL] {{ .GroupLabels.alertname }}'
+    #     text: '{{ range .Alerts }}{{ .Annotations.description }}{{ end }}'
+
+    # PagerDuty (configure for production)
+    # pagerduty_configs:
+    #   - service_key: 'YOUR_PAGERDUTY_SERVICE_KEY'
+
+    webhook_configs:
+      - url: 'http://localhost:9093/webhook'
+        send_resolved: true
+
+  # Warning alerts
+  - name: 'warning'
+    # Email configuration
+    # email_configs:
+    #   - to: 'dev-team@venio.dev'
+    #     headers:
+    #       Subject: '[WARNING] Venio Alert: {{ .GroupLabels.alertname }}'
+
+    webhook_configs:
+      - url: 'http://localhost:9093/webhook'
+        send_resolved: true
+
+  # Info alerts
+  - name: 'info'
+    webhook_configs:
+      - url: 'http://localhost:9093/webhook'
+        send_resolved: true
+
+# Inhibition rules (prevent notification spam)
+inhibit_rules:
+  # If API is down, don't alert on high latency
+  - source_match:
+      alertname: 'APIDown'
+    target_match:
+      alertname: 'HighLatency'
+    equal: ['job']
+
+  # If database is down, don't alert on connection pool
+  - source_match:
+      alertname: 'DatabaseDown'
+    target_match:
+      alertname: 'DatabasePoolExhausted'
+    equal: ['job']

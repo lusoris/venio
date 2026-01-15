@@ -19,16 +19,16 @@ var (
 
 // User represents a user in the system
 type User struct {
-	ID        int64     `json:"id"`
-	Email     string    `json:"email"`
-	Username  string    `json:"username"`
-	FirstName string    `json:"first_name"`
-	LastName  string    `json:"last_name"`
-	Avatar    *string   `json:"avatar,omitempty"`
+	ID        int64     `json:"id" example:"1"`
+	Email     string    `json:"email" example:"user@example.com"`
+	Username  string    `json:"username" example:"johndoe"`
+	FirstName string    `json:"first_name" example:"John"`
+	LastName  string    `json:"last_name" example:"Doe"`
+	Avatar    *string   `json:"avatar,omitempty" example:"https://example.com/avatar.jpg"`
 	Password  string    `json:"-"` // Never expose password
-	IsActive  bool      `json:"is_active"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	IsActive  bool      `json:"is_active" example:"true"`
+	CreatedAt time.Time `json:"created_at" example:"2026-01-15T10:30:00Z"`
+	UpdatedAt time.Time `json:"updated_at" example:"2026-01-15T10:30:00Z"`
 }
 
 // Role represents a user role
@@ -63,12 +63,12 @@ type RolePermission struct {
 
 // CreateUserRequest is the request body for creating a user
 type CreateUserRequest struct {
-	Email     string  `json:"email" binding:"required,email"`
-	Username  string  `json:"username" binding:"required,min=3,max=50"`
-	FirstName string  `json:"first_name" binding:"required"`
-	LastName  string  `json:"last_name" binding:"required"`
-	Avatar    *string `json:"avatar,omitempty"`
-	Password  string  `json:"password" binding:"required,min=8"`
+	Email     string  `json:"email" binding:"required,email,max=255" example:"user@example.com"`
+	Username  string  `json:"username" binding:"required,min=3,max=50" example:"johndoe"`
+	FirstName string  `json:"first_name" binding:"required,max=100" example:"John"`
+	LastName  string  `json:"last_name" binding:"required,max=100" example:"Doe"`
+	Avatar    *string `json:"avatar,omitempty" example:"https://example.com/avatar.jpg"`
+	Password  string  `json:"password" binding:"required,min=8,max=128" example:"SecurePass123!"`
 }
 
 // Validate checks if the CreateUserRequest is valid
@@ -93,18 +93,18 @@ func (r *CreateUserRequest) Validate() error {
 
 // UpdateUserRequest is the request body for updating a user
 type UpdateUserRequest struct {
-	Email     *string `json:"email,omitempty" binding:"omitempty,email"`
+	Email     *string `json:"email,omitempty" binding:"omitempty,email,max=255"`
 	Username  *string `json:"username,omitempty" binding:"omitempty,min=3,max=50"`
-	FirstName *string `json:"first_name,omitempty"`
-	LastName  *string `json:"last_name,omitempty"`
+	FirstName *string `json:"first_name,omitempty" binding:"omitempty,max=100"`
+	LastName  *string `json:"last_name,omitempty" binding:"omitempty,max=100"`
 	Avatar    *string `json:"avatar,omitempty"`
 	IsActive  *bool   `json:"is_active,omitempty"`
 }
 
 // LoginRequest is the request body for login
 type LoginRequest struct {
-	Email    string `json:"email" binding:"required,email"`
-	Password string `json:"password" binding:"required"`
+	Email    string `json:"email" binding:"required,email" example:"user@example.com"`
+	Password string `json:"password" binding:"required" example:"SecurePass123!"`
 }
 
 // LoginResponse is the response for login

@@ -13,14 +13,24 @@ Venio is a centralized management system that unifies Overseerr, Lidarr, Whispar
 
 ## ✨ Features
 
+### Core Features
 - **Unified Interface** - Single UI for Movies, TV, Music, and Adult content
-- **Multi-User Support** - Advanced RBAC with OIDC integration
+- **Multi-User Support** - Advanced RBAC with role-based access control
 - **Smart Request System** - Auto-approval, merging, and community voting
 - **Quality Management** - TRaSH Guides integration with dynamic profiles
 - **Metadata Enrichment** - Multi-provider aggregation with conflict resolution
 - **Content Lifecycle** - Automated retention and archive management
 - **Parental Controls** - Complete isolation for adult content
 - **Community Features** - Voting, collections, and watch parties
+
+### Production Ready
+- **🔒 Security** - JWT authentication, RBAC, input validation, rate limiting
+- **📊 Observability** - Prometheus metrics, Grafana dashboards, health checks
+- **📚 API Documentation** - Interactive Swagger/OpenAPI documentation
+- **🚨 Alerting** - Prometheus Alertmanager with configurable notifications
+- **⚡ Performance** - Redis caching, distributed rate limiting, connection pooling
+- **📝 Structured Logging** - JSON logging with contextual information
+- **🐳 Container Ready** - Full Docker Compose stack with observability
 
 ## 🚀 Quick Start
 
@@ -33,22 +43,26 @@ cd venio
 cp .env.example .env
 
 # Edit .env with your settings
-# Then start with Docker Compose
+# Then start with Docker Compose (includes Prometheus & Grafana)
 docker compose up -d
 
-# Access Venio at http://localhost:3690
+# Access services:
+# - API: http://localhost:3690
+# - Swagger UI: http://localhost:3690/swagger/index.html
+# - Grafana: http://localhost:3001 (admin/admin)
+# - Prometheus: http://localhost:9090
 ```
 
 ## 📚 Documentation
 
 ### Quick Links
-- **[Windows Setup Guide](docs/windows-setup.md)** - Automated setup for Windows developers (includes GNU Make installation)
-- **[Development Guide](docs/development.md)** - Complete setup for all platforms
-- **[API Documentation](docs/api.md)** - All endpoints with examples
+- **[API Documentation](http://localhost:3690/swagger/index.html)** - Interactive Swagger UI
+- **[Observability Guide](docs/observability.md)** - Metrics, logging, and monitoring
+- **[Deployment Guide](docs/deployment.md)** - Production deployment with full stack
+- **[Development Guide](docs/dev/development.md)** - Local development setup
 - **[Architecture Overview](docs/architecture.md)** - System design & components
-- **[Configuration Reference](docs/configuration.md)** - Environment variables
-- **[Project Guidelines](docs/project-guidelines.md)** - Coding standards & AI instructions
-- **[Project Status](docs/PROJECT_STATUS.md)** - Complete implementation status & metrics
+- **[Windows Setup Guide](docs/user/windows-setup.md)** - Automated Windows setup
+- **[Project Status](docs/dev/PROJECT_STATUS.md)** - Implementation status & metrics
 
 ### Full Documentation
 - [Installation Guide](https://github.com/lusoris/venio/wiki/Installation)
