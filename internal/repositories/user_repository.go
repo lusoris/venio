@@ -17,6 +17,7 @@ type UserRepository interface {
 	GetByID(ctx context.Context, id int64) (*models.User, error)
 	GetByEmail(ctx context.Context, email string) (*models.User, error)
 	GetByUsername(ctx context.Context, username string) (*models.User, error)
+	GetByVerificationToken(ctx context.Context, token string) (*models.User, error)
 	Create(ctx context.Context, user *models.User) (int64, error)
 	Update(ctx context.Context, user *models.User) error
 	Delete(ctx context.Context, id int64) error
@@ -244,4 +245,40 @@ func (r *PostgresUserRepository) Exists(ctx context.Context, email string) (bool
 	}
 
 	return exists, nil
+}
+
+// GetByVerificationToken retrieves a user by their email verification token
+func (r *PostgresUserRepository) GetByVerificationToken(ctx context.Context, token string) (*models.User, error) {
+	user := &models.User{}
+	err := r.pool.QueryRow(ctx,
+		`SELECT id, email, username, first_name, last_name, avatar, password, is_active, 
+		        is_email_verified, email_verification_token, email_verification_token_expires_at, 
+		        email_verified_at, created_at, updated_at
+		 FROM users WHERE email_verification_token = $1`,
+		token,
+	).Scan(
+		&user.ID,
+		&user.Email,
+		&user.Username,
+		&user.FirstName,
+		&user.LastName,
+		&user.Avatar,
+		&user.Password,
+		&user.IsActive,
+		&user.IsEmailVerified,
+		&user.EmailVerificationToken,
+		&user.EmailVerificationTokenExpiry,
+		&user.EmailVerifiedAt,
+		&user.CreatedAt,
+		&user.UpdatedAt,
+	)
+
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return nil, errors.New("user not found")
+		}
+		return nil, fmt.Errorf("failed to get user: %w", err)
+	}
+
+	return user, nil
 }

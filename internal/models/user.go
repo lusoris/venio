@@ -19,14 +19,21 @@ var (
 
 // User represents a user in the system
 type User struct {
-	ID        int64     `json:"id" example:"1"`
-	Email     string    `json:"email" example:"user@example.com"`
-	Username  string    `json:"username" example:"johndoe"`
-	FirstName string    `json:"first_name" example:"John"`
-	LastName  string    `json:"last_name" example:"Doe"`
-	Avatar    *string   `json:"avatar,omitempty" example:"https://example.com/avatar.jpg"`
-	Password  string    `json:"-"` // Never expose password
-	IsActive  bool      `json:"is_active" example:"true"`
+	ID        int64   `json:"id" example:"1"`
+	Email     string  `json:"email" example:"user@example.com"`
+	Username  string  `json:"username" example:"johndoe"`
+	FirstName string  `json:"first_name" example:"John"`
+	LastName  string  `json:"last_name" example:"Doe"`
+	Avatar    *string `json:"avatar,omitempty" example:"https://example.com/avatar.jpg"`
+	Password  string  `json:"-"` // Never expose password
+	IsActive  bool    `json:"is_active" example:"true"`
+
+	// Email verification fields
+	IsEmailVerified              bool       `json:"is_email_verified" example:"false"`
+	EmailVerificationToken       *string    `json:"-"` // Never expose token
+	EmailVerificationTokenExpiry *time.Time `json:"-"` // Never expose expiry
+	EmailVerifiedAt              *time.Time `json:"email_verified_at,omitempty" example:"2026-01-15T10:30:00Z"`
+
 	CreatedAt time.Time `json:"created_at" example:"2026-01-15T10:30:00Z"`
 	UpdatedAt time.Time `json:"updated_at" example:"2026-01-15T10:30:00Z"`
 }

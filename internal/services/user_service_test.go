@@ -68,6 +68,14 @@ func (m *MockUserRepository) Exists(ctx context.Context, email string) (bool, er
 	return args.Bool(0), args.Error(1)
 }
 
+func (m *MockUserRepository) GetByVerificationToken(ctx context.Context, token string) (*models.User, error) {
+	args := m.Called(ctx, token)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*models.User), args.Error(1)
+}
+
 // TestRegister_Success tests successful user registration
 func TestRegister_Success(t *testing.T) {
 	mockRepo := new(MockUserRepository)

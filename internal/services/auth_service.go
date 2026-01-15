@@ -3,6 +3,8 @@ package services
 
 import (
 	"context"
+	"crypto/rand"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"time"
@@ -20,6 +22,9 @@ type AuthService interface {
 	Login(ctx context.Context, email, password string) (string, string, error)
 	ValidateToken(tokenString string) (*models.TokenClaims, error)
 	RefreshToken(ctx context.Context, refreshToken string) (string, error)
+	GenerateEmailVerificationToken(ctx context.Context, userID int64) (string, error)
+	VerifyEmail(ctx context.Context, token string) error
+	ResendVerificationEmail(ctx context.Context, email string) error
 }
 
 // DefaultAuthService implements AuthService
@@ -190,4 +195,106 @@ func (s *DefaultAuthService) generateRefreshToken(user *models.User, roles []str
 	}
 
 	return tokenString, nil
+}
+
+// GenerateEmailVerificationToken generates a secure verification token for email confirmation
+func (s *DefaultAuthService) GenerateEmailVerificationToken(ctx context.Context, userID int64) (string, error) {
+	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	defer cancel()
+
+	// Generate secure random token (32 bytes = 64 hex chars)
+	token, err := generateSecureToken(32)
+	if err != nil {
+		return "", fmt.Errorf("failed to generate token: %w", err)
+	}
+
+	// Token expires in 24 hours
+	expiresAt := time.Now().Add(24 * time.Hour)
+
+	// Store token in database
+	user, err := s.userService.GetByID(ctx, userID)
+	if err != nil {
+		return "", fmt.Errorf("user not found: %w", err)
+	}
+
+	user.EmailVerificationToken = &token
+	user.EmailVerificationTokenExpiry = &expiresAt
+
+	if err := s.userService.Update(ctx, user); err != nil {
+		return "", fmt.Errorf("failed to store token: %w", err)
+	}
+
+	return token, nil
+}
+
+// VerifyEmail verifies a user's email using the provided token
+func (s *DefaultAuthService) VerifyEmail(ctx context.Context, token string) error {
+	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	defer cancel()
+
+	// Find user by verification token
+	user, err := s.userService.GetByVerificationToken(ctx, token)
+	if err != nil {
+		return errors.New("invalid or expired verification token")
+	}
+
+	// Check if token is expired
+	if user.EmailVerificationTokenExpiry == nil || time.Now().After(*user.EmailVerificationTokenExpiry) {
+		return errors.New("verification token has expired")
+	}
+
+	// Check if already verified
+	if user.IsEmailVerified {
+		return errors.New("email already verified")
+	}
+
+	// Mark email as verified
+	now := time.Now()
+	user.IsEmailVerified = true
+	user.EmailVerifiedAt = &now
+	user.EmailVerificationToken = nil
+	user.EmailVerificationTokenExpiry = nil
+
+	if err := s.userService.Update(ctx, user); err != nil {
+		return fmt.Errorf("failed to verify email: %w", err)
+	}
+
+	return nil
+}
+
+// ResendVerificationEmail generates a new token and resends verification email
+func (s *DefaultAuthService) ResendVerificationEmail(ctx context.Context, email string) error {
+	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	defer cancel()
+
+	// Get user by email
+	user, err := s.userService.GetUserByEmail(ctx, email)
+	if err != nil {
+		return errors.New("user not found")
+	}
+
+	// Check if already verified
+	if user.IsEmailVerified {
+		return errors.New("email already verified")
+	}
+
+	// Generate new token
+	_, err = s.GenerateEmailVerificationToken(ctx, user.ID)
+	if err != nil {
+		return fmt.Errorf("failed to generate token: %w", err)
+	}
+
+	// TODO: Send email with token (requires SMTP configuration)
+	// For now, token is generated and stored, email sending will be implemented separately
+
+	return nil
+}
+
+// generateSecureToken generates a cryptographically secure random token
+func generateSecureToken(length int) (string, error) {
+	bytes := make([]byte, length)
+	if _, err := rand.Read(bytes); err != nil {
+		return "", err
+	}
+	return hex.EncodeToString(bytes), nil
 }

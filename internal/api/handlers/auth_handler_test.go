@@ -38,6 +38,21 @@ func (m *MockAuthServiceForHandler) RefreshToken(ctx context.Context, token stri
 	return args.String(0), args.Error(1)
 }
 
+func (m *MockAuthServiceForHandler) GenerateEmailVerificationToken(ctx context.Context, userID int64) (string, error) {
+	args := m.Called(ctx, userID)
+	return args.String(0), args.Error(1)
+}
+
+func (m *MockAuthServiceForHandler) VerifyEmail(ctx context.Context, token string) error {
+	args := m.Called(ctx, token)
+	return args.Error(0)
+}
+
+func (m *MockAuthServiceForHandler) ResendVerificationEmail(ctx context.Context, email string) error {
+	args := m.Called(ctx, email)
+	return args.Error(0)
+}
+
 // MockUserServiceForHandler is a mock implementation of UserService for testing handlers
 type MockUserServiceForHandler struct {
 	mock.Mock
@@ -94,6 +109,27 @@ func (m *MockUserServiceForHandler) UpdateUser(ctx context.Context, id int64, re
 func (m *MockUserServiceForHandler) DeleteUser(ctx context.Context, id int64) error {
 	args := m.Called(ctx, id)
 	return args.Error(0)
+}
+
+func (m *MockUserServiceForHandler) GetByID(ctx context.Context, id int64) (*models.User, error) {
+	args := m.Called(ctx, id)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*models.User), args.Error(1)
+}
+
+func (m *MockUserServiceForHandler) Update(ctx context.Context, user *models.User) error {
+	args := m.Called(ctx, user)
+	return args.Error(0)
+}
+
+func (m *MockUserServiceForHandler) GetByVerificationToken(ctx context.Context, token string) (*models.User, error) {
+	args := m.Called(ctx, token)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*models.User), args.Error(1)
 }
 
 func TestAuthHandler_Register_Success(t *testing.T) {

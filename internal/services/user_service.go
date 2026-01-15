@@ -17,11 +17,14 @@ import (
 type UserService interface {
 	Register(ctx context.Context, req *models.CreateUserRequest) (*models.User, error)
 	GetUser(ctx context.Context, id int64) (*models.User, error)
+	GetByID(ctx context.Context, id int64) (*models.User, error)
+	Update(ctx context.Context, user *models.User) error
 	UpdateUser(ctx context.Context, id int64, req *models.UpdateUserRequest) (*models.User, error)
 	DeleteUser(ctx context.Context, id int64) error
 	ListUsers(ctx context.Context, limit int, offset int) ([]*models.User, error)
 	GetUserByEmail(ctx context.Context, email string) (*models.User, error)
 	GetUserByUsername(ctx context.Context, username string) (*models.User, error)
+	GetByVerificationToken(ctx context.Context, token string) (*models.User, error)
 }
 
 // DefaultUserService implements UserService
@@ -185,4 +188,25 @@ func isValidEmail(email string) bool {
 	// Simple email validation
 	emailRegex := regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
 	return emailRegex.MatchString(email)
+}
+
+// GetByID retrieves a user by ID (alias for GetUser, used by auth service)
+func (s *DefaultUserService) GetByID(ctx context.Context, id int64) (*models.User, error) {
+	return s.GetUser(ctx, id)
+}
+
+// Update updates a user directly (used by auth service for email verification)
+func (s *DefaultUserService) Update(ctx context.Context, user *models.User) error {
+	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	defer cancel()
+
+	return s.repo.Update(ctx, user)
+}
+
+// GetByVerificationToken retrieves a user by their email verification token
+func (s *DefaultUserService) GetByVerificationToken(ctx context.Context, token string) (*models.User, error) {
+	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	defer cancel()
+
+	return s.repo.GetByVerificationToken(ctx, token)
 }

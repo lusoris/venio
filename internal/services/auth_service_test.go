@@ -71,6 +71,27 @@ func (m *MockUserService) DeleteUser(ctx context.Context, id int64) error {
 	return args.Error(0)
 }
 
+func (m *MockUserService) GetByID(ctx context.Context, id int64) (*models.User, error) {
+	args := m.Called(ctx, id)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*models.User), args.Error(1)
+}
+
+func (m *MockUserService) Update(ctx context.Context, user *models.User) error {
+	args := m.Called(ctx, user)
+	return args.Error(0)
+}
+
+func (m *MockUserService) GetByVerificationToken(ctx context.Context, token string) (*models.User, error) {
+	args := m.Called(ctx, token)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*models.User), args.Error(1)
+}
+
 // MockUserRoleService is a mock implementation of UserRoleService for testing
 type MockUserRoleService struct {
 	mock.Mock
