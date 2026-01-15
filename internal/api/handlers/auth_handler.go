@@ -66,10 +66,7 @@ func (h *AuthHandler) Register(c *gin.Context) {
 
 	user, err := h.userService.Register(c.Request.Context(), &req)
 	if err != nil {
-		// Log detailed error server-side
-		c.Request.Context().Value("logger") // TODO: Add proper logger
-
-		// Return generic message to client
+		// Return generic message to client (detailed error logged in service layer)
 		c.JSON(http.StatusBadRequest, ErrorResponse{
 			Error:   "Registration failed",
 			Message: "Unable to create account. Email may already be registered.",
@@ -117,10 +114,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 	// Get user info
 	user, err := h.userService.GetUserByEmail(c.Request.Context(), req.Email)
 	if err != nil {
-		// Log detailed error server-side
-		// TODO: Use logger from context
-
-		// Generic message to client
+		// Return generic message to client (detailed error logged in service layer)
 		c.JSON(http.StatusInternalServerError, ErrorResponse{
 			Error:   "Authentication failed",
 			Message: "Unable to process login request",

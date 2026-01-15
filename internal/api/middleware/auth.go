@@ -2,7 +2,6 @@
 package middleware
 
 import (
-	"net/http"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -15,10 +14,7 @@ func AuthMiddleware(authService services.AuthService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" {
-			c.JSON(http.StatusUnauthorized, gin.H{
-				"error":   "Unauthorized",
-				"message": "Missing authorization header",
-			})
+			c.JSON(ErrMissingAuthHeader.StatusCode(), ErrMissingAuthHeader)
 			c.Abort()
 			return
 		}
@@ -26,10 +22,7 @@ func AuthMiddleware(authService services.AuthService) gin.HandlerFunc {
 		// Extract token from "Bearer <token>"
 		parts := strings.SplitN(authHeader, " ", 2)
 		if len(parts) != 2 || parts[0] != "Bearer" {
-			c.JSON(http.StatusUnauthorized, gin.H{
-				"error":   "Unauthorized",
-				"message": "Invalid authorization header format",
-			})
+			c.JSON(ErrInvalidAuthFormat.StatusCode(), ErrInvalidAuthFormat)
 			c.Abort()
 			return
 		}
@@ -39,19 +32,16 @@ func AuthMiddleware(authService services.AuthService) gin.HandlerFunc {
 		// Validate token
 		claims, err := authService.ValidateToken(token)
 		if err != nil {
-			c.JSON(http.StatusUnauthorized, gin.H{
-				"error":   "Unauthorized",
-				"message": "Invalid or expired token",
-			})
+			c.JSON(ErrInvalidToken.StatusCode(), ErrInvalidToken)
 			c.Abort()
 			return
 		}
 
-		// Store claims in context for use in handlers
-		c.Set("user_id", claims.UserID)
-		c.Set("email", claims.Email)
-		c.Set("username", claims.Username)
-		c.Set("roles", claims.Roles)
+		// Store claims in context using type-safe helpers
+		SetUserID(c, claims.UserID)
+		SetEmail(c, claims.Email)
+		SetUsername(c, claims.Username)
+		SetRoles(c, claims.Roles)
 
 		c.Next()
 	}
