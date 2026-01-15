@@ -499,22 +499,195 @@ func NewUserHandler(service services.UserService, logger *slog.Logger) *UserHand
 }
 ```
 
-### Error Responses
+## Email Verification Handler Pattern
+
+### Two-Endpoint Pattern: Verify & Resend
 
 ```go
-// Client error: 400, 401, 403, 404, 409
-{
-    "error": "Validation failed",
-    "message": "Email is required",
-    "code": "ERR_VALIDATION_FAILED"
+// Request structures with validation
+type VerifyEmailRequest struct {
+    Token string `json:"token" binding:"required,min=64,max=128"`
 }
 
-// Server error: 500
-{
-    "error": "Internal server error",
-    "message": "An unexpected error occurred"
+type ResendVerificationRequest struct {
+    Email string `json:"email" binding:"required,email"`
+}
+
+type SuccessResponse struct {
+    Message string `json:"message"`
+}
+
+// Handler 1: Verify Email with Token
+func (h *AuthHandler) VerifyEmail(c *gin.Context) {
+    // 1. Parse and validate request
+    var req VerifyEmailRequest
+    if err := c.ShouldBindJSON(&req); err != nil {
+        c.JSON(http.StatusBadRequest, ErrorResponse{
+            Error:   "Validation failed",
+            Message: "Token must be 64-128 characters",
+        })
+        return
+    }
+
+    // 2. Call service
+    ctx := c.Request.Context()
+    err := h.authService.VerifyEmail(ctx, req.Token)
+    if err != nil {
+        // 3. Map sentinel errors to HTTP responses
+        switch {
+        case errors.Is(err, auth.ErrInvalidVerificationToken):
+            c.JSON(http.StatusBadRequest, ErrorResponse{
+                Error:   "Invalid token",
+                Message: "The verification token is invalid or malformed",
+            })
+        case errors.Is(err, auth.ErrVerificationTokenExpired):
+            c.JSON(http.StatusBadRequest, ErrorResponse{
+                Error:   "Token expired",
+                Message: "Verification token has expired. Please request a new email.",
+            })
+        case errors.Is(err, auth.ErrEmailAlreadyVerified):
+            c.JSON(http.StatusConflict, ErrorResponse{
+                Error:   "Already verified",
+                Message: "This email address has already been verified.",
+            })
+        case errors.Is(err, auth.ErrUserNotFound):
+            c.JSON(http.StatusNotFound, ErrorResponse{
+                Error:   "User not found",
+                Message: "No user associated with this token",
+            })
+        default:
+            h.handleError(c, err)
+        }
+        return
+    }
+
+    // 4. Return success
+    c.JSON(http.StatusOK, SuccessResponse{
+        Message: "Email verified successfully",
+    })
+}
+
+// Handler 2: Resend Verification Email
+func (h *AuthHandler) ResendVerificationEmail(c *gin.Context) {
+    // 1. Parse and validate request
+    var req ResendVerificationRequest
+    if err := c.ShouldBindJSON(&req); err != nil {
+        c.JSON(http.StatusBadRequest, ErrorResponse{
+            Error:   "Validation failed",
+            Message: "Valid email address is required",
+        })
+        return
+    }
+
+    // 2. Call service
+    ctx := c.Request.Context()
+    err := h.authService.ResendVerificationEmail(ctx, req.Email)
+    if err != nil {
+        // 3. Map sentinel errors
+        switch {
+        case errors.Is(err, auth.ErrUserNotFound):
+            c.JSON(http.StatusNotFound, ErrorResponse{
+                Error:   "User not found",
+                Message: "No account found for this email address",
+            })
+        case errors.Is(err, auth.ErrEmailAlreadyVerified):
+            c.JSON(http.StatusConflict, ErrorResponse{
+                Error:   "Already verified",
+                Message: "This email address has already been verified.",
+            })
+        default:
+            h.handleError(c, err)
+        }
+        return
+    }
+
+    // 4. Return success
+    c.JSON(http.StatusOK, SuccessResponse{
+        Message: "Verification email sent. Please check your inbox.",
+    })
 }
 ```
+
+### Routes Registration Pattern
+
+```go
+// internal/api/routes.go
+func setupAuthRoutes(router *gin.Engine, authHandler *handlers.AuthHandler) {
+    auth := router.Group("/auth")
+    {
+        auth.POST("/register", authHandler.Register)
+        auth.POST("/login", authHandler.Login)
+        auth.POST("/refresh", authHandler.RefreshToken)
+        
+        // Email verification endpoints (new)
+        auth.POST("/verify-email", authHandler.VerifyEmail)           // No auth required
+        auth.POST("/resend-verification", authHandler.ResendVerificationEmail)  // No auth required
+    }
+}
+```
+
+### Handler Test Pattern for Email Verification
+
+```go
+// ✅ CORRECT: Test with sentinel error mapping
+func TestAuthHandler_VerifyEmail_Success(t *testing.T) {
+    mockService := new(MockAuthService)
+    handler := NewAuthHandler(mockService)
+    
+    token := generateSecureRandomToken(32)  // 64-char token
+    mockService.On("VerifyEmail", mock.Anything, token).Return(nil)
+    
+    reqBody := fmt.Sprintf(`{"token":"%s"}`, token)
+    req, _ := http.NewRequest("POST", "/verify-email", strings.NewReader(reqBody))
+    req.Header.Set("Content-Type", "application/json")
+    
+    w := httptest.NewRecorder()
+    c, _ := gin.CreateTestContext(w)
+    c.Request = req
+    handler.VerifyEmail(c)
+    
+    assert.Equal(t, http.StatusOK, w.Code)
+    assert.Contains(t, w.Body.String(), "Email verified successfully")
+}
+
+func TestAuthHandler_VerifyEmail_ExpiredToken(t *testing.T) {
+    mockService := new(MockAuthService)
+    handler := NewAuthHandler(mockService)
+    
+    token := generateSecureRandomToken(32)
+    mockService.On("VerifyEmail", mock.Anything, token).Return(
+        auth.ErrVerificationTokenExpired,
+    )
+    
+    reqBody := fmt.Sprintf(`{"token":"%s"}`, token)
+    req, _ := http.NewRequest("POST", "/verify-email", strings.NewReader(reqBody))
+    req.Header.Set("Content-Type", "application/json")
+    
+    w := httptest.NewRecorder()
+    c, _ := gin.CreateTestContext(w)
+    c.Request = req
+    handler.VerifyEmail(c)
+    
+    assert.Equal(t, http.StatusBadRequest, w.Code)
+    assert.Contains(t, w.Body.String(), "Token expired")
+}
+```
+
+### Key Implementation Details
+
+| Aspect | Details |
+|--------|---------|
+| **Token Validation** | min=64,max=128 (secure random 32 bytes = 64 hex chars) |
+| **HTTP Status** | 200 OK (success), 400 Bad Request (invalid/expired), 404 Not Found (no user), 409 Conflict (already verified) |
+| **Sentinel Errors** | Map to specific HTTP responses in handler switch statement |
+| **No Auth Required** | Verification endpoints accessible to unauthenticated users |
+| **Rate Limiting** | Apply rate limits to prevent token brute-force attacks |
+
+---
+
+## Error Responses
+
+
 
 ## CRITICAL: TODOs in Code
 

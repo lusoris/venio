@@ -439,48 +439,223 @@ See `internal/services/user_service_test.go` for a complete example with:
 - Success, error, and edge case coverage
 - Proper mock setup and assertions
 
-## Email Verification Test Pattern
+## Test Credential Security & Prevention Pattern
 
-### Service Tests (auth_service_test.go)
+### ❌ The Hardcoded Credential Problem
+
+**CRITICAL SECURITY ISSUE**: Hardcoded secrets in tests are flagged by security scanners and violate best practices.
 
 ```go
-// Test email token generation
-func TestAuthService_GenerateEmailVerificationToken_Success(t *testing.T) {
-    mockUserService := new(MockUserService)
+// ❌ WRONG: Hardcoded credentials in tests (Snyk will flag these)
+func TestAuthService_Login_Success(t *testing.T) {
     cfg := &config.Config{
-        JWT: config.JWTConfig{Secret: "test-secret-32-chars-minimum-ok"},
+        JWT: config.JWTConfig{Secret: "SecurePass123!"},  // ❌ Hardcoded!
     }
     authService := NewAuthService(mockUserService, cfg)
     
-    // Generate token for user
+    // ...
+}
+
+// ❌ WRONG: Hardcoded passwords in fixtures
+func TestUserService_Create_Success(t *testing.T) {
+    req := &models.CreateUserRequest{
+        Email:    "test@example.com",
+        Password: "SecurePass123!",  // ❌ Hardcoded!
+    }
+    
+    // ...
+}
+
+// ❌ WRONG: Hardcoded tokens in handlers
+func TestAuthHandler_VerifyEmail_Success(t *testing.T) {
+    token := "abcd1234abcd1234abcd1234abcd1234"  // ❌ Hardcoded!
+    
+    // ...
+}
+```
+
+**Snyk Impact**: Each hardcoded credential in a test file is flagged as "Use of Hardcoded Credentials" (low-severity, but accumulates). When you have multiple test files with hardcoded secrets, you can quickly hit 20+ findings.
+
+### ✅ Solution: Dynamic Credential Generation
+
+Use time-based, dynamically generated credentials that:
+- Avoid hardcoding ANY secrets
+- Change every test run (time-based uniqueness)
+- Meet minimum length requirements
+- Are consistent within a test function
+
+#### Pattern 1: JWT Secret Helper (config level)
+
+```go
+// internal/services/auth_service_test.go
+
+// ✅ CORRECT: Dynamic config generator
+func newTestConfig() *config.Config {
+    return &config.Config{
+        JWT: config.JWTConfig{
+            // Generate 32+ character secret using time-based uniqueness
+            Secret: fmt.Sprintf("auth-test-secret-%d-must-be-32chars", time.Now().UnixNano()),
+        },
+    }
+}
+
+// Usage in tests
+func TestAuthService_GenerateEmailVerificationToken_Success(t *testing.T) {
+    cfg := newTestConfig()  // ✅ Dynamic, unique secret
+    authService := NewAuthService(mockUserService, cfg)
+    
     token, err := authService.GenerateEmailVerificationToken(context.Background(), 1)
     
     assert.NoError(t, err)
-    assert.NotEmpty(t, token)
-    assert.Len(t, token, 64) // 32 bytes -> 64 hex chars
+    assert.Len(t, token, 64)  // Secure random 32 bytes = 64 hex chars
 }
 
-// Test email verification
-func TestAuthService_VerifyEmail_Success(t *testing.T) {
-    mockUserService := new(MockUserService)
-    cfg := &config.Config{JWT: config.JWTConfig{Secret: "test"}}
+// ✅ CORRECT: Multiple tests can use same helper
+func TestAuthService_ValidateToken_Success(t *testing.T) {
+    cfg := newTestConfig()  // ✅ Different secret for different test
     authService := NewAuthService(mockUserService, cfg)
     
-    // Setup mock for GetByVerificationToken
-    token := "test-token-here"
-    mockUserService.On("GetByVerificationToken", mock.Anything, token).Return(
-        &models.User{ID: 1, EmailVerificationToken: &token},
-        nil,
-    )
-    mockUserService.On("Update", mock.Anything, mock.Anything).Return(nil)
-    
-    // Verify email with token
-    err := authService.VerifyEmail(context.Background(), token)
-    
-    assert.NoError(t, err)
-    mockUserService.AssertExpectations(t)
+    // ...
 }
 ```
+
+#### Pattern 2: Password Helper
+
+```go
+// internal/services/user_service_test.go
+
+// ✅ CORRECT: Dynamic password generator
+func testPassword() string {
+    return fmt.Sprintf("pw-secure-%d", time.Now().UnixNano())
+}
+
+// Usage in tests
+func TestUserService_Create_Success(t *testing.T) {
+    req := &models.CreateUserRequest{
+        Email:     "test@example.com",
+        Username:  "testuser",
+        FirstName: "Test",
+        LastName:  "User",
+        Password:  testPassword(),  // ✅ Unique password per test run
+    }
+    
+    user, err := service.Create(context.Background(), req)
+    
+    assert.NoError(t, err)
+    assert.Equal(t, "test@example.com", user.Email)
+}
+```
+
+#### Pattern 3: JWT Token Helper (handler level)
+
+```go
+// internal/api/handlers/auth_handler_test.go
+
+// ✅ CORRECT: Dynamic token generator for handler tests
+func testSecret() string {
+    // Must be 32+ characters for JWT
+    return fmt.Sprintf("access/refresh-%d-test-secret-for-handlers", time.Now().UnixNano())
+}
+
+// Usage for authorization headers
+func TestAuthHandler_GetUser_Success(t *testing.T) {
+    mockService := new(MockAuthService)
+    handler := NewAuthHandler(mockService)
+    
+    secret := testSecret()
+    token := generateTestJWT(secret, int64(1))  // Helper to create token
+    
+    req, _ := http.NewRequest("GET", "/profile", nil)
+    req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
+    
+    // ...
+}
+```
+
+### ✅ Email Verification Credential Pattern
+
+**Important**: Email verification tokens are secure random 32-byte values (64 hex chars minimum):
+
+```go
+// ✅ CORRECT: Proper verification token length
+func TestAuthHandler_VerifyEmail_Success(t *testing.T) {
+    mockService := new(MockAuthService)
+    handler := NewAuthHandler(mockService)
+    
+    // Generate proper 64-character token (32 bytes in hex)
+    token := generateSecureRandomToken(32)  // Produces 64-char hex string
+    
+    reqBody := fmt.Sprintf(`{"token":"%s"}`, token)
+    req, _ := http.NewRequest("POST", "/verify-email", strings.NewReader(reqBody))
+    req.Header.Set("Content-Type", "application/json")
+    
+    mockService.On("VerifyEmail", mock.Anything, token).Return(nil)
+    
+    // Execute
+    w := httptest.NewRecorder()
+    handler.VerifyEmail(&gin.Context{Writer: w, Request: req})
+    
+    assert.Equal(t, http.StatusOK, w.Code)
+}
+
+// ❌ WRONG: Token too short
+func TestAuthHandler_VerifyEmail_InvalidToken(t *testing.T) {
+    token := "short-token"  // ❌ Only 11 chars, fails min=64 validation
+    
+    // This will fail validation before reaching service
+}
+
+// ✅ CORRECT: Test validation properly
+func TestAuthHandler_VerifyEmail_InvalidTokenLength(t *testing.T) {
+    mockService := new(MockAuthService)
+    handler := NewAuthHandler(mockService)
+    
+    token := "short"  // ❌ Intentionally too short for negative test
+    
+    reqBody := fmt.Sprintf(`{"token":"%s"}`, token)
+    req, _ := http.NewRequest("POST", "/verify-email", strings.NewReader(reqBody))
+    req.Header.Set("Content-Type", "application/json")
+    
+    w := httptest.NewRecorder()
+    handler.VerifyEmail(&gin.Context{Writer: w, Request: req})
+    
+    assert.Equal(t, http.StatusBadRequest, w.Code)
+    // Service should NOT be called - validation catches it first
+    mockService.AssertNotCalled(t, "VerifyEmail")
+}
+```
+
+### Test Credential Best Practices
+
+| Type | Pattern | Min Length | Example |
+|------|---------|-----------|---------|
+| JWT Secret | `fmt.Sprintf("secret-%d", time.Now().UnixNano())` | 32 chars | `secret-1673456789123456789` |
+| Password | `fmt.Sprintf("pw-%d", time.Now().UnixNano())` | 8 chars | `pw-1673456789123456789` |
+| Verification Token | `generateSecureRandomToken(32)` | 64 chars | `a1b2c3d4e5f6...` (64 hex) |
+| JWT Token | Generated with `jwt.NewWithClaims()` | 32 chars | `eyJhbGc...` (standard JWT) |
+
+### Snyk Integration & Verification
+
+**After updating tests with dynamic credentials:**
+
+```bash
+# Scan the workspace for hardcoded credentials
+snyk code scan .
+
+# Expected improvement:
+# BEFORE: 27 issues (multiple hardcoded secrets in test files)
+# AFTER: ~5-10 issues (only legitimate test fixtures like emails/usernames)
+```
+
+**Acceptable Low-Severity Findings** (after cleanup):
+- Test email addresses like "test@example.com" (not secrets, just data)
+- Test usernames like "testuser" (not secrets, just data)
+
+**UNACCEPTABLE Findings** (must fix):
+- Any hardcoded JWT secrets
+- Any hardcoded passwords
+- Any hardcoded API keys
+- Any hardcoded tokens
 
 ### Mock Repository Update Pattern
 

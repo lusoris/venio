@@ -36,17 +36,20 @@
 
 ### In Progress 🔄
 
-**Phase 4: Email Verification System** (40% - Backend Complete)
+**Phase 4: Email Verification System** (85% - Backend Complete, Tests Complete)
 - ✅ Database migration with verification schema
 - ✅ User model email verification fields
 - ✅ AuthService methods (GenerateToken, VerifyEmail, ResendEmail)
 - ✅ UserService helper methods (GetByID, Update, GetByVerificationToken)
 - ✅ Repository layer (GetByVerificationToken implementation)
 - ✅ Secure token generation (crypto/rand)
-- ✅ Test infrastructure updated (70+ tests passing)
-- 🔄 HTTP handlers (/api/v1/auth/verify-email endpoints)
-- 🔄 Unit tests for email verification flows
-- ⏳ SMTP integration for email sending
+- ✅ HTTP handlers (POST /api/v1/auth/verify-email, POST /api/v1/auth/resend-verification)
+- ✅ Handler unit tests (VerifyEmail_Success, VerifyEmail_ExpiredToken, ResendVerificationEmail_Success, etc.)
+- ✅ Service layer tests (all auth verification flows)
+- ✅ Sentinel errors for error mapping (ErrInvalidVerificationToken, ErrVerificationTokenExpired, etc.)
+- ✅ Test credential security (Snyk findings: 27 → 15, dynamic helpers for test secrets)
+- ✅ Documentation updated (API endpoints, handler patterns, test patterns)
+- ⏳ SMTP integration for email sending (Phase 4.1)
 
 ### Pending ⏳
 

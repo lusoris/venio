@@ -486,3 +486,7 @@ lefthook run pre-push
 |---------|------|--------|---------|
 | 1.0.0 | 2026-01-14 | AI Assistant | Initial testing guidelines |
 | 1.1.0 | 2026-01-15 | AI Assistant | Added troubleshooting for misleading lint errors and lefthook debugging |
+Die Zeichenfolge hat kein Abschlusszeichen: "@.
+    + CategoryInfo          : ParserError: (:) [], ParentContainsErrorRecordException
+    + FullyQualifiedErrorId : TerminatorExpectedAtEndOfString
+ 

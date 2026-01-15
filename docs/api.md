@@ -97,27 +97,94 @@ Gets a new access token using a refresh token.
 ```
 
 #### Verify Email
-Verifies a user's email address using a verification token (Phase 4 - In Development).
+Verifies a user's email address using a verification token.
 
-**Endpoint:** `GET /auth/verify-email?token=<verification_token>`
+**Endpoint:** `POST /auth/verify-email`
 
-**Query Parameters:**
-- `token` (required): Email verification token sent to user's email
+**Request Body:**
+```json
+{
+  "token": "a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0u1v2w3x4y5z6a7b8c9d0e1f"
+}
+```
 
 **Response:** `200 OK`
 ```json
 {
-  "message": "Email verified successfully",
-  "user": {
-    "id": 1,
-    "email": "user@example.com",
-    "is_email_verified": true,
-    "email_verified_at": "2026-01-15T10:30:00Z"
-  }
+  "message": "Email verified successfully"
 }
 ```
 
 **Error Responses:**
+
+- `400 Bad Request` - Invalid or expired token
+```json
+{
+  "error": "Invalid token",
+  "message": "The verification token is invalid or malformed"
+}
+```
+
+- `400 Bad Request` - Token has expired
+```json
+{
+  "error": "Token expired",
+  "message": "Verification token has expired. Please request a new email."
+}
+```
+
+- `409 Conflict` - Email already verified
+```json
+{
+  "error": "Already verified",
+  "message": "This email address has already been verified."
+}
+```
+
+- `404 Not Found` - No user associated with token
+```json
+{
+  "error": "User not found",
+  "message": "No user associated with this token"
+}
+```
+
+#### Resend Verification Email
+Sends a new email verification token to the user's email address.
+
+**Endpoint:** `POST /auth/resend-verification`
+
+**Request Body:**
+```json
+{
+  "email": "user@example.com"
+}
+```
+
+**Response:** `200 OK`
+```json
+{
+  "message": "Verification email sent. Please check your inbox."
+}
+```
+
+**Error Responses:**
+
+- `404 Not Found` - No account found for email
+```json
+{
+  "error": "User not found",
+  "message": "No account found for this email address"
+}
+```
+
+- `409 Conflict` - Email already verified
+```json
+{
+  "error": "Already verified",
+  "message": "This email address has already been verified."
+}
+```
 - `400 Bad Request`: Token is invalid or expired
 - `409 Conflict`: Email already verified
 
