@@ -2,6 +2,7 @@
 package handlers
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -23,9 +24,24 @@ type LoginResponse struct {
 	User         *models.User `json:"user"`
 }
 
+// SuccessResponse represents a generic success message
+type SuccessResponse struct {
+	Message string `json:"message" example:"Operation completed successfully"`
+}
+
 // RefreshTokenRequest represents a token refresh request
 type RefreshTokenRequest struct {
 	RefreshToken string `json:"refresh_token" binding:"required" example:"eyJhbGciOiJIUzI1NiIs..."`
+}
+
+// VerifyEmailRequest represents email verification request
+type VerifyEmailRequest struct {
+	Token string `json:"token" binding:"required,min=64,max=128" example:"6f0a..."`
+}
+
+// ResendVerificationRequest represents resend verification request
+type ResendVerificationRequest struct {
+	Email string `json:"email" binding:"required,email,max=255" example:"user@example.com"`
 }
 
 // AuthHandler handles authentication-related HTTP requests
@@ -166,6 +182,106 @@ func (h *AuthHandler) RefreshToken(c *gin.Context) {
 	c.JSON(http.StatusOK, RefreshTokenResponse{
 		AccessToken: accessToken,
 	})
+}
+
+// VerifyEmail handles email verification
+// @Summary Verify email
+// @Description Verify a user's email using a verification token
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param request body VerifyEmailRequest true "Verification token"
+// @Success 200 {object} SuccessResponse
+// @Failure 400 {object} ErrorResponse
+// @Failure 409 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /api/v1/auth/verify-email [post]
+func (h *AuthHandler) VerifyEmail(c *gin.Context) {
+	var req VerifyEmailRequest
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, ErrorResponse{
+			Error:   "Invalid request",
+			Message: "Invalid verification token",
+		})
+		return
+	}
+
+	if err := h.authService.VerifyEmail(c.Request.Context(), req.Token); err != nil {
+		switch {
+		case errors.Is(err, services.ErrVerificationTokenExpired):
+			c.JSON(http.StatusBadRequest, ErrorResponse{
+				Error:   "Invalid token",
+				Message: "Verification token has expired. Please request a new email.",
+			})
+		case errors.Is(err, services.ErrEmailAlreadyVerified):
+			c.JSON(http.StatusConflict, ErrorResponse{
+				Error:   "Email already verified",
+				Message: "This email address has already been verified.",
+			})
+		case errors.Is(err, services.ErrInvalidVerificationToken):
+			c.JSON(http.StatusBadRequest, ErrorResponse{
+				Error:   "Invalid token",
+				Message: "Verification token is invalid or has expired.",
+			})
+		default:
+			c.JSON(http.StatusInternalServerError, ErrorResponse{
+				Error:   "Internal server error",
+				Message: "Unable to verify email at this time.",
+			})
+		}
+		return
+	}
+
+	c.JSON(http.StatusOK, SuccessResponse{Message: "Email verified successfully"})
+}
+
+// ResendVerificationEmail handles resending verification emails
+// @Summary Resend verification email
+// @Description Resend an email verification link to the specified email address
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param request body ResendVerificationRequest true "Email address"
+// @Success 200 {object} SuccessResponse
+// @Failure 400 {object} ErrorResponse
+// @Failure 404 {object} ErrorResponse
+// @Failure 409 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /api/v1/auth/resend-verification [post]
+func (h *AuthHandler) ResendVerificationEmail(c *gin.Context) {
+	var req ResendVerificationRequest
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, ErrorResponse{
+			Error:   "Invalid request",
+			Message: "Please provide a valid email address",
+		})
+		return
+	}
+
+	if err := h.authService.ResendVerificationEmail(c.Request.Context(), req.Email); err != nil {
+		switch {
+		case errors.Is(err, services.ErrEmailAlreadyVerified):
+			c.JSON(http.StatusConflict, ErrorResponse{
+				Error:   "Email already verified",
+				Message: "This email address has already been verified.",
+			})
+		case errors.Is(err, services.ErrUserNotFound):
+			c.JSON(http.StatusNotFound, ErrorResponse{
+				Error:   "User not found",
+				Message: "No account found for the provided email.",
+			})
+		default:
+			c.JSON(http.StatusInternalServerError, ErrorResponse{
+				Error:   "Internal server error",
+				Message: "Unable to resend verification email at this time.",
+			})
+		}
+		return
+	}
+
+	c.JSON(http.StatusOK, SuccessResponse{Message: "Verification email sent"})
 }
 
 // RefreshTokenResponse represents a token refresh response

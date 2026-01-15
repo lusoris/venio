@@ -27,6 +27,13 @@ type AuthService interface {
 	ResendVerificationEmail(ctx context.Context, email string) error
 }
 
+var (
+	ErrInvalidVerificationToken = errors.New("invalid or expired verification token")
+	ErrVerificationTokenExpired = errors.New("verification token has expired")
+	ErrEmailAlreadyVerified     = errors.New("email already verified")
+	ErrUserNotFound             = errors.New("user not found")
+)
+
 // DefaultAuthService implements AuthService
 type DefaultAuthService struct {
 	userService     UserService
@@ -235,17 +242,15 @@ func (s *DefaultAuthService) VerifyEmail(ctx context.Context, token string) erro
 	// Find user by verification token
 	user, err := s.userService.GetByVerificationToken(ctx, token)
 	if err != nil {
-		return errors.New("invalid or expired verification token")
+		return ErrInvalidVerificationToken
 	}
 
-	// Check if token is expired
 	if user.EmailVerificationTokenExpiry == nil || time.Now().After(*user.EmailVerificationTokenExpiry) {
-		return errors.New("verification token has expired")
+		return ErrVerificationTokenExpired
 	}
 
-	// Check if already verified
 	if user.IsEmailVerified {
-		return errors.New("email already verified")
+		return ErrEmailAlreadyVerified
 	}
 
 	// Mark email as verified
@@ -270,12 +275,11 @@ func (s *DefaultAuthService) ResendVerificationEmail(ctx context.Context, email 
 	// Get user by email
 	user, err := s.userService.GetUserByEmail(ctx, email)
 	if err != nil {
-		return errors.New("user not found")
+		return ErrUserNotFound
 	}
 
-	// Check if already verified
 	if user.IsEmailVerified {
-		return errors.New("email already verified")
+		return ErrEmailAlreadyVerified
 	}
 
 	// Generate new token

@@ -3,7 +3,9 @@ package services
 import (
 	"context"
 	"errors"
+	"fmt"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -14,6 +16,10 @@ import (
 // MockUserRepository is a mock implementation of UserRepository
 type MockUserRepository struct {
 	mock.Mock
+}
+
+func testPassword() string {
+	return fmt.Sprintf("pw-%d", time.Now().UnixNano())
 }
 
 func (m *MockUserRepository) Create(ctx context.Context, user *models.User) (int64, error) {
@@ -84,7 +90,7 @@ func TestRegister_Success(t *testing.T) {
 	req := &models.CreateUserRequest{
 		Email:     "test@example.com",
 		Username:  "testuser",
-		Password:  "SecurePass123!",
+		Password:  testPassword(),
 		FirstName: "Test",
 		LastName:  "User",
 	}
@@ -112,7 +118,7 @@ func TestRegister_InvalidEmail(t *testing.T) {
 	req := &models.CreateUserRequest{
 		Email:    "invalid-email",
 		Username: "testuser",
-		Password: "SecurePass123!",
+		Password: testPassword(),
 	}
 
 	user, err := service.Register(context.Background(), req)
@@ -132,7 +138,7 @@ func TestRegister_DuplicateEmail(t *testing.T) {
 		Username:  "testuser",
 		FirstName: "Test",
 		LastName:  "User",
-		Password:  "SecurePass123!",
+		Password:  testPassword(),
 	}
 
 	mockRepo.On("Exists", mock.Anything, req.Email).Return(true, nil)
@@ -155,7 +161,7 @@ func TestRegister_RepositoryError(t *testing.T) {
 		Username:  "testuser",
 		FirstName: "Test",
 		LastName:  "User",
-		Password:  "SecurePass123!",
+		Password:  testPassword(),
 	}
 
 	mockRepo.On("Exists", mock.Anything, req.Email).Return(false, nil)

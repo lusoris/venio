@@ -96,6 +96,8 @@ func SetupRouter(cfg *config.Config, db *database.DB, redis *redisClient.Client,
 			auth.POST("/register", authHandler.Register)
 			auth.POST("/login", authHandler.Login)
 			auth.POST("/refresh", authHandler.RefreshToken)
+			auth.POST("/verify-email", authHandler.VerifyEmail)
+			auth.POST("/resend-verification", authHandler.ResendVerificationEmail)
 		}
 
 		// Protected user routes

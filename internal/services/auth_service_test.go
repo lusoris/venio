@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"fmt"
 	"testing"
 	"time"
 
@@ -16,6 +17,19 @@ import (
 // MockUserService is a mock implementation of UserService for testing
 type MockUserService struct {
 	mock.Mock
+}
+
+func testAuthPassword() string {
+	return fmt.Sprintf("pw-%d", time.Now().UnixNano())
+}
+
+func newTestConfig() *config.Config {
+	return &config.Config{
+		JWT: config.JWTConfig{
+			Secret:         fmt.Sprintf("secret-%d-secret-value-abcdefghijklmnopqrstuvwxyz", time.Now().UnixNano()),
+			ExpirationTime: 24 * time.Hour,
+		},
+	}
 }
 
 func (m *MockUserService) Register(ctx context.Context, req *models.CreateUserRequest) (*models.User, error) {
@@ -128,14 +142,9 @@ func (m *MockUserRoleService) RemoveRole(ctx context.Context, userID, roleID int
 func TestLogin_Success(t *testing.T) {
 	mockUserService := new(MockUserService)
 	mockUserRoleService := new(MockUserRoleService)
-	cfg := &config.Config{
-		JWT: config.JWTConfig{
-			Secret:         "test-secret-must-be-at-least-32-characters-long-ok",
-			ExpirationTime: 24 * time.Hour,
-		},
-	}
+	cfg := newTestConfig()
 
-	password := "testpassword123"
+	password := testAuthPassword()
 	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(password), 12)
 
 	testUser := &models.User{
@@ -161,14 +170,9 @@ func TestLogin_Success(t *testing.T) {
 func TestLogin_InvalidCredentials(t *testing.T) {
 	mockUserService := new(MockUserService)
 	mockUserRoleService := new(MockUserRoleService)
-	cfg := &config.Config{
-		JWT: config.JWTConfig{
-			Secret:         "test-secret-must-be-at-least-32-characters-long-ok",
-			ExpirationTime: 24 * time.Hour,
-		},
-	}
+	cfg := newTestConfig()
 
-	password := "testpassword123"
+	password := testAuthPassword()
 	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(password), 12)
 
 	testUser := &models.User{
@@ -192,14 +196,9 @@ func TestLogin_InvalidCredentials(t *testing.T) {
 func TestLogin_InactiveUser(t *testing.T) {
 	mockUserService := new(MockUserService)
 	mockUserRoleService := new(MockUserRoleService)
-	cfg := &config.Config{
-		JWT: config.JWTConfig{
-			Secret:         "test-secret-must-be-at-least-32-characters-long-ok",
-			ExpirationTime: 24 * time.Hour,
-		},
-	}
+	cfg := newTestConfig()
 
-	password := "testpassword123"
+	password := testAuthPassword()
 	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(password), 12)
 
 	testUser := &models.User{
@@ -223,18 +222,13 @@ func TestLogin_InactiveUser(t *testing.T) {
 func TestLogin_UserNotFound(t *testing.T) {
 	mockUserService := new(MockUserService)
 	mockUserRoleService := new(MockUserRoleService)
-	cfg := &config.Config{
-		JWT: config.JWTConfig{
-			Secret:         "test-secret-must-be-at-least-32-characters-long-ok",
-			ExpirationTime: 24 * time.Hour,
-		},
-	}
+	cfg := newTestConfig()
 
 	mockUserService.On("GetUserByEmail", mock.Anything, "nonexistent@example.com").
 		Return(nil, assert.AnError)
 
 	authService := NewDefaultAuthService(mockUserService, mockUserRoleService, cfg)
-	_, _, err := authService.Login(context.Background(), "nonexistent@example.com", "password")
+	_, _, err := authService.Login(context.Background(), "nonexistent@example.com", testAuthPassword())
 
 	assert.Error(t, err)
 }
@@ -242,14 +236,9 @@ func TestLogin_UserNotFound(t *testing.T) {
 func TestValidateToken_Success(t *testing.T) {
 	mockUserService := new(MockUserService)
 	mockUserRoleService := new(MockUserRoleService)
-	cfg := &config.Config{
-		JWT: config.JWTConfig{
-			Secret:         "test-secret-must-be-at-least-32-characters-long-ok",
-			ExpirationTime: 24 * time.Hour,
-		},
-	}
+	cfg := newTestConfig()
 
-	password := "testpassword123"
+	password := testAuthPassword()
 	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(password), 12)
 
 	testUser := &models.User{
@@ -277,12 +266,7 @@ func TestValidateToken_Success(t *testing.T) {
 func TestValidateToken_InvalidToken(t *testing.T) {
 	mockUserService := new(MockUserService)
 	mockUserRoleService := new(MockUserRoleService)
-	cfg := &config.Config{
-		JWT: config.JWTConfig{
-			Secret:         "test-secret-must-be-at-least-32-characters-long-ok",
-			ExpirationTime: 24 * time.Hour,
-		},
-	}
+	cfg := newTestConfig()
 
 	authService := NewDefaultAuthService(mockUserService, mockUserRoleService, cfg)
 	_, err := authService.ValidateToken("invalid.token.string")
@@ -293,14 +277,9 @@ func TestValidateToken_InvalidToken(t *testing.T) {
 func TestTokenExpiration(t *testing.T) {
 	mockUserService := new(MockUserService)
 	mockUserRoleService := new(MockUserRoleService)
-	cfg := &config.Config{
-		JWT: config.JWTConfig{
-			Secret:         "test-secret-must-be-at-least-32-characters-long-ok",
-			ExpirationTime: 24 * time.Hour,
-		},
-	}
+	cfg := newTestConfig()
 
-	password := "testpassword123"
+	password := testAuthPassword()
 	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(password), 12)
 
 	testUser := &models.User{
