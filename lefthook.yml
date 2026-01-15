@@ -32,11 +32,11 @@ pre-push:
 
     security-scan:
       run: |
-        if command -v snyk &> /dev/null; then
+        if command -v snyk > /dev/null 2>&1; then
           echo "Running Snyk security scan..."
           snyk test --severity-threshold=medium || echo "⚠ Security issues found, but continuing..."
         else
-          echo "Snyk not installed. Install with: npm install -g snyk"
+          echo "⚠ Snyk not installed. Install with: npm install -g snyk"
         fi
       fail: false
 
